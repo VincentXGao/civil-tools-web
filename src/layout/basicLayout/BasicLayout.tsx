@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   UploadOutlined,
   UserOutlined,
@@ -6,28 +6,58 @@ import {
 } from "@ant-design/icons";
 import { Layout, Menu, theme, Flex } from "antd";
 import { Outlet } from "react-router-dom";
+import { useNavigate } from "react-router";
+import type { MenuInfo } from "rc-menu/lib/interface";
 
 const { Header, Content, Footer, Sider } = Layout;
 
-const items = [
-  UserOutlined,
-  VideoCameraOutlined,
-  UploadOutlined,
-  UserOutlined,
-].map((icon, index) => ({
-  key: String(index + 1),
-  icon: React.createElement(icon),
-  label: `nav ${index + 1}`,
-}));
+const menuItems = [
+  {
+    key: "1",
+    icon: <UploadOutlined />,
+    label: "数据绘图",
+    children: [
+      { key: "1-1", icon: <UploadOutlined />, label: "剪重比" },
+      { key: "1-2", icon: <UploadOutlined />, label: "层间位移角" },
+    ],
+  },
+  {
+    key: "2",
+    icon: <UserOutlined />,
+    label: " ha222?",
+    children: [
+      { key: "2-1", icon: <UploadOutlined />, label: "sdfdf213" },
+      { key: "2-2", icon: <UploadOutlined />, label: "sdfdf221241242" },
+    ],
+  },
+];
+
+const navigatePath: { [key: string]: string } = {
+  "1-1": "./shearMassRatio",
+  "1-2": "./dddd",
+};
 
 const BasicLayout: React.FC = () => {
   const {
     token: { colorBgContainer },
   } = theme.useToken();
+  const navigate = useNavigate();
+  const handleMenuChanged = (event: MenuInfo) => {
+    navigate(navigatePath[event.key]);
+  };
+
+  const [title, setTitle] = useState<string>("结构工具箱");
 
   return (
     <Layout style={{ height: "100vh" }}>
-      <Sider breakpoint="md" collapsedWidth="50">
+      <Sider
+        breakpoint="md"
+        collapsedWidth="75"
+        onBreakpoint={(broken) => {
+          setTitle(broken ? "CivilTool" : "结构工具箱");
+          console.log(broken);
+        }}
+      >
         <Flex
           vertical
           justify="center"
@@ -40,22 +70,24 @@ const BasicLayout: React.FC = () => {
               marginBottom: "10px",
             }}
           ></VideoCameraOutlined>
-          <text>结构工具箱</text>
+          <div>{title}</div>
         </Flex>
         <Menu
           theme="dark"
           mode="inline"
-          defaultSelectedKeys={["1"]}
-          items={items}
+          defaultOpenKeys={["1"]}
+          onClick={handleMenuChanged}
+          items={menuItems}
         />
       </Sider>
-      <Layout>
+      <Layout style={{ minWidth: "500px" }}>
         <Header style={{ padding: 0, background: colorBgContainer }} />
         <Content style={{ margin: "24px 16px 0" }}>
           <Outlet></Outlet>
         </Content>
         <Footer style={{ textAlign: "center" }}>
-          Ant Design ©{new Date().getFullYear()} Created by Ant UED
+          Ant and Vincent Design ©{new Date().getFullYear()} Created by Ant UED
+          and Vincent
         </Footer>
       </Layout>
     </Layout>

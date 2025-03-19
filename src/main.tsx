@@ -8,7 +8,7 @@ createRoot(document.getElementById("root")!).render(
   <ThemeProvider
     theme={{
       token: {
-        colorPrimary: "#00ff00",
+        colorPrimary: "#5599ff",
       },
     }}
   >

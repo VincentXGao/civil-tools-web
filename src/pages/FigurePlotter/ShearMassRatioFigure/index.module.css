@@ -1,0 +1,21 @@
+.root{
+    height: 100%;
+    width: 100%;
+}
+
+.leftPanel{
+    width: 50%;
+}
+.data{
+    overflow-y: auto;
+}
+.rightPanel{
+    width: 50%;
+}
+.inputList{
+    margin: 5px 10px 5px 10px ;
+}
+.input{
+    width:30%;
+    margin: 0px 10px 0
+}
