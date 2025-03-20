@@ -38,9 +38,6 @@ const navigatePath: { [key: string]: string } = {
 };
 
 const BasicLayout: React.FC = () => {
-  const {
-    token: { colorBgContainer },
-  } = theme.useToken();
   const navigate = useNavigate();
   const handleMenuChanged = (event: MenuInfo) => {
     navigate(navigatePath[event.key]);
@@ -52,6 +49,7 @@ const BasicLayout: React.FC = () => {
     <Layout style={{ height: "100vh" }}>
       <Sider
         breakpoint="md"
+        style={{ backgroundColor: "#6b8857" }}
         collapsedWidth="75"
         onBreakpoint={(broken) => {
           setTitle(broken ? "CivilTool" : "结构工具箱");
@@ -73,7 +71,6 @@ const BasicLayout: React.FC = () => {
           <div>{title}</div>
         </Flex>
         <Menu
-          theme="dark"
           mode="inline"
           defaultOpenKeys={["1"]}
           onClick={handleMenuChanged}
@@ -81,8 +78,8 @@ const BasicLayout: React.FC = () => {
         />
       </Sider>
       <Layout style={{ minWidth: "500px" }}>
-        <Header style={{ padding: 0, background: colorBgContainer }} />
-        <Content style={{ margin: "24px 16px 0" }}>
+        <Header style={{ padding: 0, background: "#a7c190" }} />
+        <Content style={{ margin: "24px 16px 0", overflow: "hidden" }}>
           <Outlet></Outlet>
         </Content>
         <Footer style={{ textAlign: "center" }}>
