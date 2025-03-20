@@ -1,19 +1,34 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import styles from "./index.module.css";
-import { Flex, Input, Space, Image, Button } from "antd";
+import { Flex, Input, Image, Button, message, Select } from "antd";
 import { shearMassRatioPlot } from "@/apis/figurePlotter";
+import dayjs from "dayjs";
+import { v4 } from "uuid";
+
+type floorData = {
+  floor: number;
+  shear_x: number;
+  shear_y: number;
+  mass: number;
+};
+
+type historyData = {
+  value: string;
+  label: string;
+  data: floorData[];
+  limitation: number;
+};
+
+const saveDataToLocalStorage = (data: historyData[]) => {
+  localStorage.setItem("ShearMassRatioHisotryData", JSON.stringify(data));
+};
 
 const ShearMassRatioFigure: React.FC = () => {
+  const [messageApi, contextHolder] = message.useMessage();
   const [floorNum, setFloorNum] = useState<number>(30);
-
-  const [shearValues, setShearValues] = useState<
-    {
-      floor: number;
-      shear_x: number;
-      shear_y: number;
-      mass: number;
-    }[]
-  >(
+  const [limitation, setLimitation] = useState<string>("1.5");
+  const [history, setHistory] = useState<historyData[]>([]);
+  const [shearValues, setShearValues] = useState<floorData[]>(
     Array.from({ length: floorNum }, (_, index) => {
       const floor = floorNum - index;
       const shear_x = Math.round(Math.random() * 2000 * (index + 1));
@@ -23,31 +38,113 @@ const ShearMassRatioFigure: React.FC = () => {
     })
   );
   const [imageURL, setImageURL] = useState<string>("");
+  // 绘图接口
   const draw = async () => {
-    const base_url = import.meta.env.VITE_BASE_URL;
-    console.log(base_url);
     const plot_data = {
       data: {
         shear_x: shearValues.map((item) => item.shear_x),
         shear_y: shearValues.map((item) => item.shear_y),
         mass: shearValues.map((item) => item.mass),
+        limitation: Number(limitation) / 100,
       },
     };
     const response = await shearMassRatioPlot(plot_data);
     const url = URL.createObjectURL(response.data);
     setImageURL(url);
   };
+  useEffect(() => {
+    const history = localStorage.getItem("ShearMassRatioHisotryData");
+    if (history) {
+      const data = JSON.parse(history);
+      setHistory(data);
+    }
+  }, []);
+  useEffect(() => {
+    setShearValues(
+      Array.from({ length: floorNum }, (_, index) => {
+        const floor = floorNum - index;
+        const shear_x = Math.round(Math.random() * 2000 * (index + 1));
+        const shear_y = Math.round(Math.random() * 2000 * (index + 1));
+        const mass = Math.round(Math.random() * 200000 * (index + 1));
+        return { floor, shear_x, shear_y, mass };
+      })
+    );
+  }, [floorNum]);
 
-  const savePlot = () => {};
+  const saveHistoryData = () => {
+    const historyItemLimit = 7;
+    if (history.length >= historyItemLimit) {
+      messageApi.info(
+        `目前仅支持保存${historyItemLimit}条数据，最旧的数据将被抹除。`
+      );
+    }
+    // 获取当前时间戳
+    const timestamp = new Date().getTime();
+    // 使用dayjs将时间戳转换为指定格式
+    const uuid = v4();
+    const formattedDate =
+      dayjs(timestamp).format("YYYY-MM-DD") + "-" + uuid.slice(0, 2);
+    let newHistory = [
+      {
+        value: uuid,
+        label: formattedDate,
+        data: shearValues,
+        limitation: Number(limitation),
+      },
+      ...history,
+    ];
+    if (newHistory.length > historyItemLimit) {
+      newHistory = newHistory.slice(0, historyItemLimit);
+    }
+    saveDataToLocalStorage(newHistory);
+    setHistory(newHistory);
+  };
+
+  const savePlot = () => {
+    if (imageURL == "") {
+      message.info("请先绘图，再下载。");
+      return;
+    }
+    const timestamp = new Date().getTime();
+    const fileName = `剪重比_${timestamp}.png`;
+    const a = document.createElement("a");
+    a.href = imageURL;
+    a.download = fileName;
+    a.click();
+  };
+
   return (
     <Flex className={styles.root}>
+      {contextHolder}
       <Flex className={styles.leftPanel} vertical>
-        <Input
-          value={floorNum}
-          onChange={(e) => {
-            setFloorNum(Number(e.currentTarget.value));
-          }}
-        ></Input>
+        <Flex align="center" justify="space-evenly">
+          <div>总层数</div>
+          <Input
+            className={styles.infoInput}
+            value={floorNum}
+            onChange={(e) => {
+              setFloorNum(Number(e.currentTarget.value));
+            }}
+          ></Input>
+          <div>剪重比限值</div>
+          <Input
+            className={styles.infoInput}
+            value={limitation}
+            suffix="%"
+            onChange={(e) => {
+              setLimitation(e.currentTarget.value);
+            }}
+            onBlur={(e) => {
+              const newValue = Number(e.currentTarget.value);
+              if (Number.isNaN(newValue)) {
+                setLimitation("1.5");
+                message.info("剪重比限值需是数字，默认改为1.5%。");
+                return;
+              }
+            }}
+          ></Input>
+        </Flex>
+
         <Flex
           align="center"
           justify="space-between"
@@ -141,6 +238,22 @@ const ShearMassRatioFigure: React.FC = () => {
         </div>
       </Flex>
       <Flex className={styles.rightPanel} vertical justify="center">
+        <Flex justify="right" align="center">
+          <Button onClick={saveHistoryData}>保存至历史数据</Button>
+          <div style={{ margin: "10px" }}>历史数据</div>
+          <Select
+            defaultActiveFirstOption
+            style={{ width: 160 }}
+            options={history}
+            onSelect={(e) => {
+              const dataToBeLoaded = history.find((item) => item.value == e);
+              if (dataToBeLoaded) {
+                setShearValues(dataToBeLoaded.data);
+                setLimitation(dataToBeLoaded.limitation.toString());
+              }
+            }}
+          ></Select>
+        </Flex>
         <Flex
           justify="center"
           align="center"

@@ -7,5 +7,6 @@ export interface IShearMassRatioData {
         mass: number[];
         shear_x: number[];
         shear_y: number[];
+        limitation: number;
     }
 }

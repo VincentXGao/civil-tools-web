@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import {
-  UploadOutlined,
-  UserOutlined,
-  VideoCameraOutlined,
+  ToolFilled,
+  AreaChartOutlined,
+  LineChartOutlined,
+  FileDoneOutlined,
+  FileWordOutlined,
 } from "@ant-design/icons";
-import { Layout, Menu, theme, Flex } from "antd";
+import { Layout, Menu, Flex } from "antd";
 import { Outlet } from "react-router-dom";
 import { useNavigate } from "react-router";
 import type { MenuInfo } from "rc-menu/lib/interface";
@@ -14,20 +16,20 @@ const { Header, Content, Footer, Sider } = Layout;
 const menuItems = [
   {
     key: "1",
-    icon: <UploadOutlined />,
+    icon: <AreaChartOutlined />,
     label: "数据绘图",
     children: [
-      { key: "1-1", icon: <UploadOutlined />, label: "剪重比" },
-      { key: "1-2", icon: <UploadOutlined />, label: "层间位移角" },
+      { key: "1-1", icon: <LineChartOutlined />, label: "剪重比" },
+      { key: "1-2", icon: <LineChartOutlined />, label: "层间位移角" },
     ],
   },
   {
     key: "2",
-    icon: <UserOutlined />,
-    label: " ha222?",
+    icon: <FileWordOutlined />,
+    label: "计算书/报告",
     children: [
-      { key: "2-1", icon: <UploadOutlined />, label: "sdfdf213" },
-      { key: "2-2", icon: <UploadOutlined />, label: "sdfdf221241242" },
+      { key: "2-1", icon: <FileDoneOutlined />, label: "楼梯计算书" },
+      { key: "2-2", icon: <FileDoneOutlined />, label: "超限报告生成" },
     ],
   },
 ];
@@ -53,7 +55,6 @@ const BasicLayout: React.FC = () => {
         collapsedWidth="75"
         onBreakpoint={(broken) => {
           setTitle(broken ? "CivilTool" : "结构工具箱");
-          console.log(broken);
         }}
       >
         <Flex
@@ -62,12 +63,12 @@ const BasicLayout: React.FC = () => {
           align="center"
           style={{ color: "white", margin: "20px 20px 20px 20px" }}
         >
-          <VideoCameraOutlined
+          <ToolFilled
             style={{
               fontSize: "30px",
               marginBottom: "10px",
             }}
-          ></VideoCameraOutlined>
+          />
           <div>{title}</div>
         </Flex>
         <Menu

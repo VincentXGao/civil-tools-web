@@ -6,6 +6,10 @@
 .leftPanel{
     width: 60%;
 }
+.infoInput{
+    max-width: 200px;
+    width: 20%;
+}
 .data{
     overflow-y: auto;
 }
@@ -13,8 +17,11 @@
     width: 40%;
 }
 .inputTitle{
+    background-color:#a1a3a9;
+    border-radius: 10px;
     font-size: 20px;
     margin: 10px 0px 10px 0px ;
+    padding: 10px;
 }
 .inputList{
     margin: 5px 10px 5px 10px ;
