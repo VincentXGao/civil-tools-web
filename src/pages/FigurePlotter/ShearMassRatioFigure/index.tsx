@@ -1,9 +1,20 @@
 import React, { useEffect, useState } from "react";
+import { UploadOutlined } from "@ant-design/icons";
 import styles from "./index.module.css";
-import { Flex, Input, Image, Button, message, Select } from "antd";
+import { Flex, Input, Image, Button, message, Select, Upload } from "antd";
+import type { UploadProps } from "antd";
 import { shearMassRatioPlot } from "@/apis/figurePlotter";
+import { UploadRequestOption } from "rc-upload/lib/interface";
+import FormData from "form-data";
+import {
+  checkYDBStatus,
+  uploadYDBFile,
+  extractShearMassRatioData,
+} from "@/apis/ydbDataExtract";
 import dayjs from "dayjs";
 import { v4 } from "uuid";
+import { calculateHash } from "@/utils";
+import { RcFile } from "antd/es/upload";
 
 type floorData = {
   floor: number;
@@ -49,7 +60,7 @@ const ShearMassRatioFigure: React.FC = () => {
       },
     };
     const response = await shearMassRatioPlot(plot_data);
-    const url = URL.createObjectURL(response.data);
+    const url = URL.createObjectURL(response);
     setImageURL(url);
   };
   useEffect(() => {
@@ -59,17 +70,6 @@ const ShearMassRatioFigure: React.FC = () => {
       setHistory(data);
     }
   }, []);
-  useEffect(() => {
-    setShearValues(
-      Array.from({ length: floorNum }, (_, index) => {
-        const floor = floorNum - index;
-        const shear_x = Math.round(Math.random() * 2000 * (index + 1));
-        const shear_y = Math.round(Math.random() * 2000 * (index + 1));
-        const mass = Math.round(Math.random() * 200000 * (index + 1));
-        return { floor, shear_x, shear_y, mass };
-      })
-    );
-  }, [floorNum]);
 
   const saveHistoryData = () => {
     const historyItemLimit = 7;
@@ -113,10 +113,57 @@ const ShearMassRatioFigure: React.FC = () => {
     a.click();
   };
 
+  const myUploadYDBFile = async (options: UploadRequestOption) => {
+    const fileHash = await calculateHash(options.file as RcFile);
+    const result = await checkYDBStatus({ hash: fileHash });
+    const tempResult = await extractShearMassRatioData({
+      ydb_file_id: result.file_id,
+    });
+    setFloorNum(tempResult.data[0].floor);
+    setShearValues(tempResult.data);
+  };
+
+  // 上传配置
+  const props: UploadProps = {
+    name: "file",
+    multiple: false,
+    showUploadList: false,
+    async beforeUpload(file) {
+      const fileHash = await calculateHash(file);
+      const result = await checkYDBStatus({ hash: fileHash });
+      if (result.status != "existed") {
+        console.log("我要上传！");
+        const formData = new FormData();
+        // 向 FormData 中添加文件字段
+        formData.append("YDBFile", file);
+        // 向 FormData 中添加字符串字段
+        formData.append("hash", fileHash);
+        const uploadResult = await uploadYDBFile(formData);
+        console.log(uploadResult);
+      }
+    },
+    customRequest: myUploadYDBFile,
+    onChange(info) {
+      if (info.file.status !== "uploading") {
+        console.log(info.file, info.fileList);
+      }
+      if (info.file.status === "done") {
+        message.success(`${info.file.name} file uploaded successfully`);
+      } else if (info.file.status === "error") {
+        message.error(`${info.file.name} file upload failed.`);
+      }
+    },
+  };
+
   return (
     <Flex className={styles.root}>
       {contextHolder}
       <Flex className={styles.leftPanel} vertical>
+        <Flex justify="left" align="center" style={{ margin: "10px" }}>
+          <Upload maxCount={1} {...props}>
+            <Button icon={<UploadOutlined />}>尝试上传dsnModel.ydb</Button>
+          </Upload>
+        </Flex>
         <Flex align="center" justify="space-evenly">
           <div>总层数</div>
           <Input

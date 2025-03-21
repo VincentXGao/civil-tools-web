@@ -1,7 +1,4 @@
 
-export interface IShearMassRatioPlotResult {
-    data: Blob;
-}
 export interface IShearMassRatioData {
     data: {
         mass: number[];

@@ -31,7 +31,7 @@ http.interceptors.request.use(
 // 添加响应拦截器
 http.interceptors.response.use(
     (response) => {
-        return response
+        return Promise.resolve(response.data);
     },
     (error) => {
         message.error('请求异常');
