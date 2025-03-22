@@ -170,7 +170,11 @@ const ShearMassRatioFigure: React.FC = () => {
             className={styles.infoInput}
             value={floorNum}
             onChange={(e) => {
-              setFloorNum(Number(e.currentTarget.value));
+              const newFloorNumber = Number(e.currentTarget.value);
+              if (Number.isNaN(newFloorNumber)) {
+                return;
+              }
+              setFloorNum(newFloorNumber);
             }}
           ></Input>
           <div>剪重比限值</div>
