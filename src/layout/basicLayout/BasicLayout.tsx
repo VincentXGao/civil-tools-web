@@ -36,7 +36,9 @@ const menuItems = [
 
 const navigatePath: { [key: string]: string } = {
   "1-1": "./shearMassRatio",
-  "1-2": "./dddd",
+  "1-2": "./driftFigure",
+  "2-1": "./stairSheet",
+  "2-2": "./seismicReviewReport",
 };
 
 const BasicLayout: React.FC = () => {
