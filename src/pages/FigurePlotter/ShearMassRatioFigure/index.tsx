@@ -161,7 +161,7 @@ const ShearMassRatioFigure: React.FC = () => {
       <Flex className={styles.leftPanel} vertical>
         <Flex justify="left" align="center" style={{ margin: "10px" }}>
           <Upload maxCount={1} {...props}>
-            <Button icon={<UploadOutlined />}>尝试上传dsnModel.ydb</Button>
+            <Button icon={<UploadOutlined />}>上传dsnModel.ydb</Button>
           </Upload>
         </Flex>
         <Flex align="center" justify="space-evenly">

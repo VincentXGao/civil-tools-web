@@ -1,0 +1,10 @@
+.root{
+    height: 100%;
+    width: 100%;
+}
+.leftPanel{
+    width: 60%;
+}
+.rightPanel{
+    width: 40%;
+}

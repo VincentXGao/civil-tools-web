@@ -3,6 +3,7 @@ import { RouteObject, Navigate } from "react-router-dom";
 import BasicLayout from "@/layout/basicLayout/BasicLayout";
 import StairSheet from "@/pages/ReportGen/StairSheet";
 import SeismicReviewReport from "@/pages/ReportGen/SeismicReviewReport";
+import ShearMomentFigure from "@/pages/FigurePlotter/ShearMomentFigure";
 
 // 懒加载组件
 const ShearMassRatioFigure = lazy(
@@ -32,6 +33,14 @@ const routes: RouteObject[] = [
         element: (
           <Suspense fallback={<div>正在加载...</div>}>
             <ShearMassRatioFigure />
+          </Suspense>
+        ),
+      },
+      {
+        path: "/mainPage/shearMomentFigure",
+        element: (
+          <Suspense fallback={<div>正在加载...</div>}>
+            <ShearMomentFigure />
           </Suspense>
         ),
       },

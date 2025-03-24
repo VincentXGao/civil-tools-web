@@ -20,7 +20,8 @@ const menuItems = [
     label: "数据绘图",
     children: [
       { key: "1-1", icon: <LineChartOutlined />, label: "剪重比" },
-      { key: "1-2", icon: <LineChartOutlined />, label: "层间位移角" },
+      { key: "1-2", icon: <LineChartOutlined />, label: "剪力弯矩" },
+      { key: "1-3", icon: <LineChartOutlined />, label: "层间位移角" },
     ],
   },
   {
@@ -36,7 +37,8 @@ const menuItems = [
 
 const navigatePath: { [key: string]: string } = {
   "1-1": "./shearMassRatio",
-  "1-2": "./driftFigure",
+  "1-2": "./shearMomentFigure",
+  "1-3": "./driftFigure",
   "2-1": "./stairSheet",
   "2-2": "./seismicReviewReport",
 };
