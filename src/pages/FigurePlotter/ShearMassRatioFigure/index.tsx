@@ -5,7 +5,6 @@ import { Flex, Input, Image, Button, message, Select, Upload } from "antd";
 import type { UploadProps } from "antd";
 import { shearMassRatioPlot } from "@/apis/figurePlotter";
 import { UploadRequestOption } from "rc-upload/lib/interface";
-import FormData from "form-data";
 import {
   checkYDBStatus,
   uploadYDBFile,
@@ -115,10 +114,15 @@ const ShearMassRatioFigure: React.FC = () => {
 
   const myUploadYDBFile = async (options: UploadRequestOption) => {
     const fileHash = await calculateHash(options.file as RcFile);
+    console.log(
+      `现在我准备根据文件提取数据，文件哈希是${fileHash.slice(0, 5)}`
+    );
     const result = await checkYDBStatus({ hash: fileHash });
+    console.log("根据哈希问了后端这个文件的情况", result);
     const tempResult = await extractShearMassRatioData({
       ydb_file_id: result.file_id,
     });
+    console.log("问到的结果是", tempResult);
     setFloorNum(tempResult.data[0].floor);
     setShearValues(tempResult.data);
   };
@@ -130,19 +134,23 @@ const ShearMassRatioFigure: React.FC = () => {
     showUploadList: false,
     async beforeUpload(file) {
       const fileHash = await calculateHash(file);
+      console.log(`我选择的文件，哈希值前五位是${fileHash.slice(0, 5)}`);
       const result = await checkYDBStatus({ hash: fileHash });
+      console.log(`这个文件在后端是否存在？${result.status}`);
       if (result.status != "existed") {
-        console.log("我要上传！");
+        console.log("因为不存在，所以我要上传！");
         const formData = new FormData();
         // 向 FormData 中添加文件字段
         formData.append("YDBFile", file);
         // 向 FormData 中添加字符串字段
         formData.append("hash", fileHash);
+        console.log("上传内容", formData);
         const uploadResult = await uploadYDBFile(formData);
-        console.log(uploadResult);
+        console.log("上传完成，结果是", uploadResult);
       }
     },
     customRequest: myUploadYDBFile,
+    // customRequest: () => {},
     onChange(info) {
       if (info.file.status !== "uploading") {
         console.log(info.file, info.fileList);

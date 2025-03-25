@@ -15,7 +15,6 @@ import FormData from "form-data";
 import {
   checkYDBStatus,
   extractShearMassRatioData,
-  uploadYDBFile,
 } from "@/apis/ydbDataExtract";
 import { RcFile, UploadRequestOption } from "rc-upload/lib/interface";
 
@@ -52,8 +51,8 @@ const ShearMomentFigure: React.FC = () => {
         formData.append("YDBFile", file);
         // 向 FormData 中添加字符串字段
         formData.append("hash", fileHash);
-        const uploadResult = await uploadYDBFile(formData);
-        console.log(uploadResult);
+        // const uploadResult = await uploadYDBFile(formData);
+        // console.log(uploadResult);
       }
     },
     customRequest: myUploadYDBFile,

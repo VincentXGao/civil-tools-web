@@ -11,15 +11,19 @@ const http: AxiosInstance = axios.create({
     baseURL: base_url, // api 的 base_url
     timeout: request_timeout * 1000, // 请求超时时间（ms）
     withCredentials: false, // 禁用 Cookie
-    headers: {
-        "Content-Type": "application/json"
-    }
+    // headers: {
+    //     "Content-Type": "application/json"
+    // }
 });
+
 
 // 添加请求拦截器
 http.interceptors.request.use(
     (request) => {
         // request.headers["MY-TOKEN"] = "Vincent"
+        if (request.headers["Content-Type"] != "application/json") {
+            request.headers["Content-Type"] = ""
+        }
         return request
     },
     (error) => {
