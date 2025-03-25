@@ -15,12 +15,8 @@ import { v4 } from "uuid";
 import { calculateHash } from "@/utils";
 import { RcFile } from "antd/es/upload";
 
-type floorData = {
-  floor: number;
-  shear_x: number;
-  shear_y: number;
-  mass: number;
-};
+import { floorData, defaultData } from "./defaultData";
+import { data } from "react-router-dom";
 
 type historyData = {
   value: string;
@@ -35,21 +31,17 @@ const saveDataToLocalStorage = (data: historyData[]) => {
 
 const ShearMassRatioFigure: React.FC = () => {
   const [messageApi, contextHolder] = message.useMessage();
-  const [floorNum, setFloorNum] = useState<number>(30);
+  const [floorNum, setFloorNum] = useState<number>(defaultData.length);
   const [limitation, setLimitation] = useState<string>("1.5");
   const [history, setHistory] = useState<historyData[]>([]);
-  const [shearValues, setShearValues] = useState<floorData[]>(
-    Array.from({ length: floorNum }, (_, index) => {
-      const floor = floorNum - index;
-      const shear_x = Math.round(Math.random() * 2000 * (index + 1));
-      const shear_y = Math.round(Math.random() * 2000 * (index + 1));
-      const mass = Math.round(Math.random() * 200000 * (index + 1));
-      return { floor, shear_x, shear_y, mass };
-    })
-  );
+  const [shearValues, setShearValues] = useState<floorData[]>(defaultData);
   const [imageURL, setImageURL] = useState<string>("");
+
+  const [dataLoading, setDataLoading] = useState<boolean>(false);
+  const [plotLoading, setPlotLoading] = useState<boolean>(false);
   // 绘图接口
   const draw = async () => {
+    setPlotLoading(true);
     const plot_data = {
       data: {
         shear_x: shearValues.map((item) => item.shear_x),
@@ -61,6 +53,7 @@ const ShearMassRatioFigure: React.FC = () => {
     const response = await shearMassRatioPlot(plot_data);
     const url = URL.createObjectURL(response);
     setImageURL(url);
+    setPlotLoading(false);
   };
   useEffect(() => {
     const history = localStorage.getItem("ShearMassRatioHisotryData");
@@ -125,6 +118,7 @@ const ShearMassRatioFigure: React.FC = () => {
     console.log("问到的结果是", tempResult);
     setFloorNum(tempResult.data[0].floor);
     setShearValues(tempResult.data);
+    setDataLoading(false);
   };
 
   // 上传配置
@@ -133,6 +127,7 @@ const ShearMassRatioFigure: React.FC = () => {
     multiple: false,
     showUploadList: false,
     async beforeUpload(file) {
+      setDataLoading(true);
       const fileHash = await calculateHash(file);
       console.log(`我选择的文件，哈希值前五位是${fileHash.slice(0, 5)}`);
       const result = await checkYDBStatus({ hash: fileHash });
@@ -174,17 +169,7 @@ const ShearMassRatioFigure: React.FC = () => {
         </Flex>
         <Flex align="center" justify="space-evenly">
           <div>总层数</div>
-          <Input
-            className={styles.infoInput}
-            value={floorNum}
-            onChange={(e) => {
-              const newFloorNumber = Number(e.currentTarget.value);
-              if (Number.isNaN(newFloorNumber)) {
-                return;
-              }
-              setFloorNum(newFloorNumber);
-            }}
-          ></Input>
+          <Input className={styles.infoInput} value={floorNum}></Input>
           <div>剪重比限值</div>
           <Input
             className={styles.infoInput}
@@ -214,87 +199,130 @@ const ShearMassRatioFigure: React.FC = () => {
           <div className={styles.input}>Y方向剪力</div>
           <div className={styles.input}>本层及上层质量和</div>
         </Flex>
-        <div className={styles.data}>
-          {shearValues.map((item) => (
+        {dataLoading ? (
+          <h1>加载中...</h1>
+        ) : (
+          <div className={styles.data}>
             <Flex
-              key={item.floor}
+              justify="right"
               align="center"
-              justify="space-between"
-              className={styles.inputList}
+              style={{ margin: "5px 20px 20px 10px" }}
             >
-              <div style={{ width: "10%" }}>{`${item.floor}层`}</div>
-              <Input
-                className={styles.input}
-                value={item.shear_x}
-                suffix="kN"
-                onChange={(e) => {
-                  const newValue = Number(e.currentTarget.value);
-                  if (Number.isNaN(newValue)) {
+              <div>楼层增减</div>
+              <Button
+                style={{ marginLeft: "20px" }}
+                onClick={() => {
+                  const newData: floorData[] = [
+                    {
+                      floor: shearValues[0].floor + 1,
+                      shear_x: shearValues[0].shear_x,
+                      shear_y: shearValues[0].shear_y,
+                      mass: shearValues[0].mass,
+                    },
+                    ...shearValues,
+                  ];
+                  // newData[0].floor = newData[0].floor + 1;
+                  setShearValues(newData);
+                  setFloorNum(newData.length);
+                }}
+              >
+                +
+              </Button>
+              <Button
+                style={{ marginLeft: "20px" }}
+                onClick={() => {
+                  if (shearValues.length <= 1) {
                     return;
                   }
-                  const newShearValues = shearValues.map((t) => {
-                    if (t.floor == item.floor) {
-                      return {
-                        floor: t.floor,
-                        shear_x: newValue,
-                        shear_y: t.shear_y,
-                        mass: t.mass,
-                      };
-                    }
-                    return t;
-                  });
-                  setShearValues(newShearValues);
+                  const newData = shearValues.slice(1, shearValues.length);
+                  setShearValues(newData);
+                  setFloorNum(newData.length);
                 }}
-              ></Input>
-              <Input
-                className={styles.input}
-                value={item.shear_y}
-                suffix="kN"
-                onChange={(e) => {
-                  const newValue = Number(e.currentTarget.value);
-                  if (Number.isNaN(newValue)) {
-                    return;
-                  }
-                  const newShearValues = shearValues.map((t) => {
-                    if (t.floor == item.floor) {
-                      return {
-                        floor: t.floor,
-                        shear_x: t.shear_x,
-                        shear_y: newValue,
-                        mass: t.mass,
-                      };
-                    }
-                    return t;
-                  });
-                  setShearValues(newShearValues);
-                }}
-              ></Input>
-              <Input
-                className={styles.input}
-                value={item.mass}
-                suffix="kN"
-                onChange={(e) => {
-                  const newValue = Number(e.currentTarget.value);
-                  if (Number.isNaN(newValue)) {
-                    return;
-                  }
-                  const newShearValues = shearValues.map((t) => {
-                    if (t.floor == item.floor) {
-                      return {
-                        floor: t.floor,
-                        shear_x: t.shear_x,
-                        shear_y: t.shear_y,
-                        mass: newValue,
-                      };
-                    }
-                    return t;
-                  });
-                  setShearValues(newShearValues);
-                }}
-              ></Input>
+              >
+                -
+              </Button>
             </Flex>
-          ))}
-        </div>
+            {shearValues.map((item) => (
+              <Flex
+                key={item.floor}
+                align="center"
+                justify="space-between"
+                className={styles.inputList}
+              >
+                <div style={{ width: "10%" }}>{`${item.floor}层`}</div>
+                <Input
+                  className={styles.input}
+                  value={item.shear_x}
+                  suffix="kN"
+                  onChange={(e) => {
+                    const newValue = Number(e.currentTarget.value);
+                    if (Number.isNaN(newValue)) {
+                      return;
+                    }
+                    const newShearValues = shearValues.map((t) => {
+                      if (t.floor == item.floor) {
+                        return {
+                          floor: t.floor,
+                          shear_x: newValue,
+                          shear_y: t.shear_y,
+                          mass: t.mass,
+                        };
+                      }
+                      return t;
+                    });
+                    setShearValues(newShearValues);
+                  }}
+                ></Input>
+                <Input
+                  className={styles.input}
+                  value={item.shear_y}
+                  suffix="kN"
+                  onChange={(e) => {
+                    const newValue = Number(e.currentTarget.value);
+                    if (Number.isNaN(newValue)) {
+                      return;
+                    }
+                    const newShearValues = shearValues.map((t) => {
+                      if (t.floor == item.floor) {
+                        return {
+                          floor: t.floor,
+                          shear_x: t.shear_x,
+                          shear_y: newValue,
+                          mass: t.mass,
+                        };
+                      }
+                      return t;
+                    });
+                    setShearValues(newShearValues);
+                  }}
+                ></Input>
+                <Input
+                  className={styles.input}
+                  value={item.mass}
+                  suffix="kN"
+                  onChange={(e) => {
+                    const newValue = Number(e.currentTarget.value);
+                    if (Number.isNaN(newValue)) {
+                      return;
+                    }
+                    const newShearValues = shearValues.map((t) => {
+                      if (t.floor == item.floor) {
+                        return {
+                          floor: t.floor,
+                          shear_x: t.shear_x,
+                          shear_y: t.shear_y,
+                          mass: newValue,
+                        };
+                      }
+                      return t;
+                    });
+                    setShearValues(newShearValues);
+                  }}
+                ></Input>
+              </Flex>
+            ))}
+          </div>
+        )}
       </Flex>
       <Flex className={styles.rightPanel} vertical justify="center">
         <Flex justify="right" align="center">
@@ -307,6 +335,7 @@ const ShearMassRatioFigure: React.FC = () => {
             onSelect={(e) => {
               const dataToBeLoaded = history.find((item) => item.value == e);
               if (dataToBeLoaded) {
+                setFloorNum(dataToBeLoaded.data.length);
                 setShearValues(dataToBeLoaded.data);
                 setLimitation(dataToBeLoaded.limitation.toString());
               }
@@ -322,8 +351,10 @@ const ShearMassRatioFigure: React.FC = () => {
             fontSize: "40px",
           }}
         >
-          {imageURL == "" ? (
-            "等待绘图"
+          {plotLoading ? (
+            <h3>正在绘图...</h3>
+          ) : imageURL == "" ? (
+            "点击绘制图片进行绘图"
           ) : (
             <Image
               preview={false}
