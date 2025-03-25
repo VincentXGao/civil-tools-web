@@ -8,3 +8,24 @@
 .rightPanel{
     width: 40%;
 }
+
+.infoInput{
+    max-width: 200px;
+    width: 20%;
+}
+
+.inputTitle{
+    background-color:#a1a3a9;
+    border-radius: 10px;
+    font-size: 18px;
+    margin: 10px 0px 10px 0px ;
+    padding: 10px;
+}
+.inputList{
+    margin: 5px 10px 5px 10px ;
+}
+.input{
+    width:30%;
+    margin: 0px 10px 0
+}
+

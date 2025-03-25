@@ -7,3 +7,12 @@ export interface IShearMassRatioData {
         limitation: number;
     }
 }
+export interface IShearMomentData {
+    data: {
+        plot_type: string;
+        seismic_x: number[];
+        seismic_y: number[];
+        wind_x: number[];
+        wind_y: number[];
+    }
+}

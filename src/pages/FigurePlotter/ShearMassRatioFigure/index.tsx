@@ -4,29 +4,19 @@ import styles from "./index.module.css";
 import { Flex, Input, Image, Button, message, Select, Upload } from "antd";
 import type { UploadProps } from "antd";
 import { shearMassRatioPlot } from "@/apis/figurePlotter";
-import { UploadRequestOption } from "rc-upload/lib/interface";
-import {
-  checkYDBStatus,
-  uploadYDBFile,
-  extractShearMassRatioData,
-} from "@/apis/ydbDataExtract";
-import dayjs from "dayjs";
-import { v4 } from "uuid";
-import { calculateHash } from "@/utils";
-import { RcFile } from "antd/es/upload";
-
+import { extractShearMassRatioData } from "@/apis/ydbDataExtract";
 import { floorData, defaultData } from "./defaultData";
-import { data } from "react-router-dom";
+import {
+  loadDataFromLocalStorage,
+  saveHitoryData,
+  preUploadYDBFile,
+  downLoadFigure,
+} from "../Utils";
 
 type historyData = {
   value: string;
   label: string;
-  data: floorData[];
-  limitation: number;
-};
-
-const saveDataToLocalStorage = (data: historyData[]) => {
-  localStorage.setItem("ShearMassRatioHisotryData", JSON.stringify(data));
+  data: { floorData: floorData[]; limitation: number };
 };
 
 const ShearMassRatioFigure: React.FC = () => {
@@ -36,7 +26,7 @@ const ShearMassRatioFigure: React.FC = () => {
   const [history, setHistory] = useState<historyData[]>([]);
   const [shearValues, setShearValues] = useState<floorData[]>(defaultData);
   const [imageURL, setImageURL] = useState<string>("");
-
+  const [fileID, setFileID] = useState<number>(0);
   const [dataLoading, setDataLoading] = useState<boolean>(false);
   const [plotLoading, setPlotLoading] = useState<boolean>(false);
   // 绘图接口
@@ -55,65 +45,35 @@ const ShearMassRatioFigure: React.FC = () => {
     setImageURL(url);
     setPlotLoading(false);
   };
+  // 加载历史记录
   useEffect(() => {
-    const history = localStorage.getItem("ShearMassRatioHisotryData");
-    if (history) {
-      const data = JSON.parse(history);
-      setHistory(data);
-    }
+    setHistory(loadDataFromLocalStorage("ShearMassRatioHisotryData"));
   }, []);
-
+  // 保存历史记录
   const saveHistoryData = () => {
-    const historyItemLimit = 7;
-    if (history.length >= historyItemLimit) {
-      messageApi.info(
-        `目前仅支持保存${historyItemLimit}条数据，最旧的数据将被抹除。`
-      );
-    }
-    // 获取当前时间戳
-    const timestamp = new Date().getTime();
-    // 使用dayjs将时间戳转换为指定格式
-    const uuid = v4();
-    const formattedDate =
-      dayjs(timestamp).format("YYYY-MM-DD") + "-" + uuid.slice(0, 2);
-    let newHistory = [
-      {
-        value: uuid,
-        label: formattedDate,
-        data: shearValues,
-        limitation: Number(limitation),
-      },
-      ...history,
-    ];
-    if (newHistory.length > historyItemLimit) {
-      newHistory = newHistory.slice(0, historyItemLimit);
-    }
-    saveDataToLocalStorage(newHistory);
+    const newHistory = saveHitoryData("ShearMassRatioHisotryData", {
+      floorData: shearValues,
+      limitation: Number(limitation),
+    });
     setHistory(newHistory);
   };
-
+  // 保存绘制好的图片
   const savePlot = () => {
     if (imageURL == "") {
-      message.info("请先绘图，再下载。");
+      messageApi.info("请先绘图，再下载。");
       return;
     }
-    const timestamp = new Date().getTime();
-    const fileName = `剪重比_${timestamp}.png`;
-    const a = document.createElement("a");
-    a.href = imageURL;
-    a.download = fileName;
-    a.click();
+    const figureType = "剪重比";
+    downLoadFigure(figureType, imageURL);
   };
 
-  const myUploadYDBFile = async (options: UploadRequestOption) => {
-    const fileHash = await calculateHash(options.file as RcFile);
-    console.log(
-      `现在我准备根据文件提取数据，文件哈希是${fileHash.slice(0, 5)}`
-    );
-    const result = await checkYDBStatus({ hash: fileHash });
-    console.log("根据哈希问了后端这个文件的情况", result);
+  const myUploadYDBFile = async () => {
+    if (fileID <= 0) {
+      messageApi.error("文件上传出错！");
+      return;
+    }
     const tempResult = await extractShearMassRatioData({
-      ydb_file_id: result.file_id,
+      ydb_file_id: fileID,
     });
     console.log("问到的结果是", tempResult);
     setFloorNum(tempResult.data[0].floor);
@@ -128,45 +88,22 @@ const ShearMassRatioFigure: React.FC = () => {
     showUploadList: false,
     async beforeUpload(file) {
       setDataLoading(true);
-      const fileHash = await calculateHash(file);
-      console.log(`我选择的文件，哈希值前五位是${fileHash.slice(0, 5)}`);
-      const result = await checkYDBStatus({ hash: fileHash });
-      console.log(`这个文件在后端是否存在？${result.status}`);
-      if (result.status != "existed") {
-        console.log("因为不存在，所以我要上传！");
-        const formData = new FormData();
-        // 向 FormData 中添加文件字段
-        formData.append("YDBFile", file);
-        // 向 FormData 中添加字符串字段
-        formData.append("hash", fileHash);
-        console.log("上传内容", formData);
-        const uploadResult = await uploadYDBFile(formData);
-        console.log("上传完成，结果是", uploadResult);
-      }
+      setFileID(await preUploadYDBFile(file));
     },
     customRequest: myUploadYDBFile,
-    // customRequest: () => {},
-    onChange(info) {
-      if (info.file.status !== "uploading") {
-        console.log(info.file, info.fileList);
-      }
-      if (info.file.status === "done") {
-        message.success(`${info.file.name} file uploaded successfully`);
-      } else if (info.file.status === "error") {
-        message.error(`${info.file.name} file upload failed.`);
-      }
-    },
   };
 
   return (
     <Flex className={styles.root}>
       {contextHolder}
       <Flex className={styles.leftPanel} vertical>
+        {/* 上传ydb按钮这一行 */}
         <Flex justify="left" align="center" style={{ margin: "10px" }}>
           <Upload maxCount={1} {...props}>
             <Button icon={<UploadOutlined />}>上传dsnModel.ydb</Button>
           </Upload>
         </Flex>
+        {/* 一些可有可无的参数 */}
         <Flex align="center" justify="space-evenly">
           <div>总层数</div>
           <Input className={styles.infoInput} value={floorNum}></Input>
@@ -188,7 +125,7 @@ const ShearMassRatioFigure: React.FC = () => {
             }}
           ></Input>
         </Flex>
-
+        {/* 标题文字 */}
         <Flex
           align="center"
           justify="space-between"
@@ -199,6 +136,7 @@ const ShearMassRatioFigure: React.FC = () => {
           <div className={styles.input}>Y方向剪力</div>
           <div className={styles.input}>本层及上层质量和</div>
         </Flex>
+        {/* 具体数据，与加减层 */}
         {dataLoading ? (
           <h1>加载中...</h1>
         ) : (
@@ -252,7 +190,7 @@ const ShearMassRatioFigure: React.FC = () => {
                 <div style={{ width: "10%" }}>{`${item.floor}层`}</div>
                 <Input
                   className={styles.input}
-                  value={item.shear_x}
+                  value={Math.round(item.shear_x)}
                   suffix="kN"
                   onChange={(e) => {
                     const newValue = Number(e.currentTarget.value);
@@ -275,7 +213,7 @@ const ShearMassRatioFigure: React.FC = () => {
                 ></Input>
                 <Input
                   className={styles.input}
-                  value={item.shear_y}
+                  value={Math.round(item.shear_y)}
                   suffix="kN"
                   onChange={(e) => {
                     const newValue = Number(e.currentTarget.value);
@@ -298,7 +236,7 @@ const ShearMassRatioFigure: React.FC = () => {
                 ></Input>
                 <Input
                   className={styles.input}
-                  value={item.mass}
+                  value={Math.round(item.mass)}
                   suffix="kN"
                   onChange={(e) => {
                     const newValue = Number(e.currentTarget.value);
@@ -335,9 +273,9 @@ const ShearMassRatioFigure: React.FC = () => {
             onSelect={(e) => {
               const dataToBeLoaded = history.find((item) => item.value == e);
               if (dataToBeLoaded) {
-                setFloorNum(dataToBeLoaded.data.length);
-                setShearValues(dataToBeLoaded.data);
-                setLimitation(dataToBeLoaded.limitation.toString());
+                setFloorNum(dataToBeLoaded.data.floorData.length);
+                setShearValues(dataToBeLoaded.data.floorData);
+                setLimitation(dataToBeLoaded.data.limitation.toString());
               }
             }}
           ></Select>

@@ -13,5 +13,5 @@ export interface IShearMassRatioExtractedResult {
     data: [{ floor: number, shear_x: number, shear_y: number, mass: number }]
 }
 export interface IShearMomentExtractedResult {
-    data: [{ floor: number, wind_x: number, wind_y: number, seismic_x: number, seismic_y: number }]
+    data: [{ floor: number, seismic_x: number, seismic_y: number, wind_x: number, wind_y: number, }]
 }
