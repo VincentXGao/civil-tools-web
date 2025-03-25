@@ -16,3 +16,12 @@ export interface IShearMomentData {
         wind_y: number[];
     }
 }
+
+export interface IDriftData {
+    data: {
+        seismic_x: number[];
+        seismic_y: number[];
+        wind_x: number[];
+        wind_y: number[];
+    }
+}

@@ -15,3 +15,7 @@ export const extractShearMassRatioData =
 export const extractShearMomentData =
     (params: { "ydb_file_id": number, "type": string }): Promise<IShearMomentExtractedResult> =>
         http.post('/ydb_extractor/shear_moment_extractor', params)
+
+export const extractDriftData =
+    (params: { "ydb_file_id": number }): Promise<IShearMomentExtractedResult> =>
+        http.post('/ydb_extractor/drift_extractor', params)

@@ -3,11 +3,13 @@ import { RouteObject, Navigate } from "react-router-dom";
 import BasicLayout from "@/layout/basicLayout/BasicLayout";
 import StairSheet from "@/pages/ReportGen/StairSheet";
 import SeismicReviewReport from "@/pages/ReportGen/SeismicReviewReport";
-import ShearMomentFigure from "@/pages/FigurePlotter/ShearMomentFigure";
 
 // 懒加载组件
 const ShearMassRatioFigure = lazy(
   () => import("@/pages/FigurePlotter/ShearMassRatioFigure")
+);
+const ShearMomentFigure = lazy(
+  () => import("@/pages/FigurePlotter/ShearMomentFigure")
 );
 const DriftFigure = lazy(() => import("@/pages/FigurePlotter/DriftFigure"));
 

@@ -18,8 +18,6 @@ import {
   saveHitoryData,
 } from "../Utils";
 import styles from "./index.module.css";
-import { extractDriftData } from "@/apis/ydbDataExtract";
-import { driftPlot } from "@/apis/figurePlotter";
 
 type historyData = {
   value: string;
@@ -27,7 +25,7 @@ type historyData = {
   data: floorData[];
 };
 
-const DriftFigure: React.FC = () => {
+const MyFigurePlotter: React.FC = () => {
   const [messageApi, contextHolder] = message.useMessage();
   const [floorNum, setFloorNum] = useState<number>(defaultData.length);
   const [history, setHistory] = useState<historyData[]>([]);
@@ -51,7 +49,7 @@ const DriftFigure: React.FC = () => {
         wind_y: pageData.map((item) => item.wind_y),
       },
     };
-    const response = await driftPlot(plot_data);
+    const response = await myDrawAPI(plot_data);
     const url = URL.createObjectURL(response);
     setImageURL(url);
     setPlotLoading(false);
@@ -91,7 +89,7 @@ const DriftFigure: React.FC = () => {
       messageApi.error("文件上传出错！");
       return;
     }
-    const tempResult = await extractDriftData({
+    const tempResult = await changeTheExtractAPI({
       ydb_file_id: fileID,
     });
     console.log(tempResult);
@@ -195,7 +193,6 @@ const DriftFigure: React.FC = () => {
                     className={styles.input}
                     value={Math.round(item.wind_x)}
                     suffix=""
-                    prefix="1/"
                     onChange={(e) => {
                       const newValue = Number(e.currentTarget.value);
                       if (Number.isNaN(newValue)) {
@@ -208,7 +205,6 @@ const DriftFigure: React.FC = () => {
                     className={styles.input}
                     value={Math.round(item.wind_y)}
                     suffix=""
-                    prefix="1/"
                     onChange={(e) => {
                       const newValue = Number(e.currentTarget.value);
                       if (Number.isNaN(newValue)) {
@@ -221,7 +217,6 @@ const DriftFigure: React.FC = () => {
                     className={styles.input}
                     value={Math.round(item.seismic_x)}
                     suffix=""
-                    prefix="1/"
                     onChange={(e) => {
                       const newValue = Number(e.currentTarget.value);
                       if (Number.isNaN(newValue)) {
@@ -234,7 +229,6 @@ const DriftFigure: React.FC = () => {
                     className={styles.input}
                     value={Math.round(item.seismic_y)}
                     suffix=""
-                    prefix="1/"
                     onChange={(e) => {
                       const newValue = Number(e.currentTarget.value);
                       if (Number.isNaN(newValue)) {
@@ -299,4 +293,4 @@ const DriftFigure: React.FC = () => {
     </>
   );
 };
-export default DriftFigure;
+export default MyFigurePlotter;

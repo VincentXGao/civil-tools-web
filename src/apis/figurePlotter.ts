@@ -1,5 +1,5 @@
 import http from '@/http'
-import { IShearMassRatioData, IShearMomentData } from './figurePlotterType'
+import { IShearMassRatioData, IShearMomentData, IDriftData } from './figurePlotterType'
 
 
 export const shearMassRatioPlot =
@@ -9,3 +9,7 @@ export const shearMassRatioPlot =
 export const shearMomentPlot =
     (params: IShearMomentData): Promise<Blob> =>
         http.post('/figure_plot/shear_moment', params, { responseType: "blob" })
+
+export const driftPlot =
+    (params: IDriftData): Promise<Blob> =>
+        http.post('/figure_plot/drift', params, { responseType: "blob" })
