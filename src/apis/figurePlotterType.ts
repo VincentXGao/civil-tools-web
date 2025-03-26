@@ -19,6 +19,7 @@ export interface IShearMomentData {
 
 export interface IDriftData {
     data: {
+        limitation: number;
         seismic_x: number[];
         seismic_y: number[];
         wind_x: number[];

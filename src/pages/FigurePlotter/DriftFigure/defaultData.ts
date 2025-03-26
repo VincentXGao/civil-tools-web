@@ -8,10 +8,10 @@ export type floorData = {
 };
 
 const floor = [1, 2, 3, 4, 5, 6, 7, 8]
-const wind_x = [394, 365, 338, 295, 260, 218, 165, 113]
-const wind_y = [386, 355, 328, 287, 253, 212, 160, 109]
-const seismic_x = [3100, 2600, 2100, 1600, 1300, 950, 650, 320]
-const seismic_y = [3100, 2600, 2100, 1600, 1300, 950, 650, 320]
+const wind_x = [3305, 1668, 1466, 1362, 1421, 1678, 2168, 2915]
+const wind_y = [2814, 1397, 1254, 1332, 1539, 1907, 2540, 3530]
+const seismic_x = [1111, 562, 492, 450, 456, 518, 640, 824]
+const seismic_y = [961, 469, 411, 422, 471, 566, 730, 989]
 
 const totalFloor = floor.length
 export const defaultData: floorData[] = Array.from({ length: floor.length }, (_, index) => {

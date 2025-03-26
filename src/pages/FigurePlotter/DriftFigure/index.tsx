@@ -45,6 +45,7 @@ const DriftFigure: React.FC = () => {
     setPlotLoading(true);
     const plot_data = {
       data: {
+        limitation: 300,
         seismic_x: pageData.map((item) => item.seismic_x),
         seismic_y: pageData.map((item) => item.seismic_y),
         wind_x: pageData.map((item) => item.wind_x),

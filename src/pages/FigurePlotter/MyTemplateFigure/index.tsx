@@ -18,6 +18,8 @@ import {
   saveHitoryData,
 } from "../Utils";
 import styles from "./index.module.css";
+import { driftPlot } from "@/apis/figurePlotter";
+import { extractDriftData } from "@/apis/ydbDataExtract";
 
 type historyData = {
   value: string;
@@ -49,7 +51,7 @@ const MyFigurePlotter: React.FC = () => {
         wind_y: pageData.map((item) => item.wind_y),
       },
     };
-    const response = await myDrawAPI(plot_data);
+    const response = await driftPlot(plot_data);
     const url = URL.createObjectURL(response);
     setImageURL(url);
     setPlotLoading(false);
@@ -89,7 +91,7 @@ const MyFigurePlotter: React.FC = () => {
       messageApi.error("文件上传出错！");
       return;
     }
-    const tempResult = await changeTheExtractAPI({
+    const tempResult = await extractDriftData({
       ydb_file_id: fileID,
     });
     console.log(tempResult);
