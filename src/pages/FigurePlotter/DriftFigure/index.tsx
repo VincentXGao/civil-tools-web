@@ -24,7 +24,7 @@ import { driftPlot } from "@/apis/figurePlotter";
 type historyData = {
   value: string;
   label: string;
-  data: floorData[];
+  data: { floorData: floorData[]; limitation: number };
 };
 
 const DriftFigure: React.FC = () => {
@@ -37,15 +37,17 @@ const DriftFigure: React.FC = () => {
 
   const [dataLoading, setDataLoading] = useState<boolean>(false);
   const [plotLoading, setPlotLoading] = useState<boolean>(false);
+
+  const [limitation, setLimitation] = useState<number>(300);
   // todo: change the key
-  const localStorageKey = "ChangeTheKEY!!!";
+  const localStorageKey = "DriftHistoryData";
 
   // 绘图接口
   const draw = async () => {
     setPlotLoading(true);
     const plot_data = {
       data: {
-        limitation: 300,
+        limitation: limitation,
         seismic_x: pageData.map((item) => item.seismic_x),
         seismic_y: pageData.map((item) => item.seismic_y),
         wind_x: pageData.map((item) => item.wind_x),
@@ -74,7 +76,10 @@ const DriftFigure: React.FC = () => {
   }, []);
   // 保存历史记录
   const saveHistoryData = () => {
-    const newHistory = saveHitoryData(localStorageKey, pageData);
+    const newHistory = saveHitoryData(localStorageKey, {
+      floorData: pageData,
+      limitation: limitation,
+    });
     setHistory(newHistory);
   };
 
@@ -129,6 +134,21 @@ const DriftFigure: React.FC = () => {
           <Flex align="center" justify="space-evenly">
             <div>总层数</div>
             <Input className={styles.infoInput} value={floorNum}></Input>
+            <div>位移角限值</div>
+            <Input
+              className={styles.infoInput}
+              value={limitation}
+              suffix=""
+              prefix="1/"
+              onChange={(e) => {
+                const newValue = Number(e.currentTarget.value);
+                if (Number.isNaN(newValue)) {
+                  message.info("限值需是正整数");
+                  return;
+                }
+                setLimitation(newValue);
+              }}
+            ></Input>
           </Flex>
           <Flex
             align="center"
@@ -261,8 +281,9 @@ const DriftFigure: React.FC = () => {
               onSelect={(e) => {
                 const dataToBeLoaded = history.find((item) => item.value == e);
                 if (dataToBeLoaded) {
-                  setFloorNum(dataToBeLoaded.data.length);
-                  setPageData(dataToBeLoaded.data);
+                  setFloorNum(dataToBeLoaded.data.floorData.length);
+                  setPageData(dataToBeLoaded.data.floorData);
+                  setLimitation(dataToBeLoaded.data.limitation);
                 }
               }}
             ></Select>

@@ -130,10 +130,6 @@ const ShearMomentFigure: React.FC = () => {
         {contextHolder}
         <Flex className={styles.leftPanel} vertical>
           <Flex justify="left" align="center">
-            <Radio.Group onChange={handleOptionChange} value={selectedOption}>
-              <Radio value="kN">剪力</Radio>
-              <Radio value="MN·m">倾覆力矩</Radio>
-            </Radio.Group>
             <Upload maxCount={1} {...props}>
               <Button
                 icon={<UploadOutlined />}
@@ -142,6 +138,10 @@ const ShearMomentFigure: React.FC = () => {
                 上传dsnModel.ydb
               </Button>
             </Upload>
+            <Radio.Group onChange={handleOptionChange} value={selectedOption}>
+              <Radio value="kN">剪力</Radio>
+              <Radio value="MN·m">倾覆力矩</Radio>
+            </Radio.Group>
           </Flex>
           <Flex align="center" justify="space-evenly">
             <div>总层数</div>
