@@ -45,6 +45,7 @@ const MyFigurePlotter: React.FC = () => {
     setPlotLoading(true);
     const plot_data = {
       data: {
+        limitation: 100,
         seismic_x: pageData.map((item) => item.seismic_x),
         seismic_y: pageData.map((item) => item.seismic_y),
         wind_x: pageData.map((item) => item.wind_x),
@@ -140,108 +141,111 @@ const MyFigurePlotter: React.FC = () => {
             <div className={styles.input}>小震X向</div>
             <div className={styles.input}>小震Y向</div>
           </Flex>
-          <Flex
-            justify="right"
-            align="center"
-            style={{ margin: "5px 20px 20px 10px" }}
-          >
-            <div>楼层增减</div>
-            <Button
-              style={{ marginLeft: "20px" }}
-              onClick={() => {
-                const newData: floorData[] = [
-                  {
-                    floor: pageData[0].floor + 1,
-                    seismic_x: pageData[0].seismic_x,
-                    seismic_y: pageData[0].seismic_y,
-                    wind_x: pageData[0].wind_x,
-                    wind_y: pageData[0].wind_y,
-                  },
-                  ...pageData,
-                ];
-                setPageData(newData);
-                setFloorNum(newData.length);
-              }}
-            >
-              +
-            </Button>
-            <Button
-              style={{ marginLeft: "20px" }}
-              onClick={() => {
-                if (pageData.length <= 1) {
-                  return;
-                }
-                const newData = pageData.slice(1, pageData.length);
-                setPageData(newData);
-                setFloorNum(newData.length);
-              }}
-            >
-              -
-            </Button>
-          </Flex>
+
           {dataLoading ? (
             <h1>加载中...</h1>
           ) : (
-            pageData.map((item, i) => {
-              return (
-                <Flex
-                  key={item.floor}
-                  align="center"
-                  justify="space-between"
-                  className={styles.inputList}
+            <div className={styles.data}>
+              <Flex
+                justify="right"
+                align="center"
+                style={{ margin: "5px 20px 20px 10px" }}
+              >
+                <div>楼层增减</div>
+                <Button
+                  style={{ marginLeft: "20px" }}
+                  onClick={() => {
+                    const newData: floorData[] = [
+                      {
+                        floor: pageData[0].floor + 1,
+                        seismic_x: pageData[0].seismic_x,
+                        seismic_y: pageData[0].seismic_y,
+                        wind_x: pageData[0].wind_x,
+                        wind_y: pageData[0].wind_y,
+                      },
+                      ...pageData,
+                    ];
+                    setPageData(newData);
+                    setFloorNum(newData.length);
+                  }}
                 >
-                  <div style={{ width: "10%" }}>{`${item.floor}层`}</div>
-                  <Input
-                    className={styles.input}
-                    value={Math.round(item.wind_x)}
-                    suffix=""
-                    onChange={(e) => {
-                      const newValue = Number(e.currentTarget.value);
-                      if (Number.isNaN(newValue)) {
-                        return;
-                      }
-                      handleInputChange(i, "wind_x", newValue);
-                    }}
-                  ></Input>
-                  <Input
-                    className={styles.input}
-                    value={Math.round(item.wind_y)}
-                    suffix=""
-                    onChange={(e) => {
-                      const newValue = Number(e.currentTarget.value);
-                      if (Number.isNaN(newValue)) {
-                        return;
-                      }
-                      handleInputChange(i, "wind_y", newValue);
-                    }}
-                  ></Input>
-                  <Input
-                    className={styles.input}
-                    value={Math.round(item.seismic_x)}
-                    suffix=""
-                    onChange={(e) => {
-                      const newValue = Number(e.currentTarget.value);
-                      if (Number.isNaN(newValue)) {
-                        return;
-                      }
-                      handleInputChange(i, "seismic_x", newValue);
-                    }}
-                  ></Input>
-                  <Input
-                    className={styles.input}
-                    value={Math.round(item.seismic_y)}
-                    suffix=""
-                    onChange={(e) => {
-                      const newValue = Number(e.currentTarget.value);
-                      if (Number.isNaN(newValue)) {
-                        return;
-                      }
-                      handleInputChange(i, "seismic_y", newValue);
-                    }}
-                  ></Input>
-                </Flex>
-              );
-            })
+                  +
+                </Button>
+                <Button
+                  style={{ marginLeft: "20px" }}
+                  onClick={() => {
+                    if (pageData.length <= 1) {
+                      return;
+                    }
+                    const newData = pageData.slice(1, pageData.length);
+                    setPageData(newData);
+                    setFloorNum(newData.length);
+                  }}
+                >
+                  -
+                </Button>
+              </Flex>
+              {pageData.map((item, i) => {
+                return (
+                  <Flex
+                    key={item.floor}
+                    align="center"
+                    justify="space-between"
+                    className={styles.inputList}
+                  >
+                    <div style={{ width: "10%" }}>{`${item.floor}层`}</div>
+                    <Input
+                      className={styles.input}
+                      value={Math.round(item.wind_x)}
+                      suffix=""
+                      onChange={(e) => {
+                        const newValue = Number(e.currentTarget.value);
+                        if (Number.isNaN(newValue)) {
+                          return;
+                        }
+                        handleInputChange(i, "wind_x", newValue);
+                      }}
+                    ></Input>
+                    <Input
+                      className={styles.input}
+                      value={Math.round(item.wind_y)}
+                      suffix=""
+                      onChange={(e) => {
+                        const newValue = Number(e.currentTarget.value);
+                        if (Number.isNaN(newValue)) {
+                          return;
+                        }
+                        handleInputChange(i, "wind_y", newValue);
+                      }}
+                    ></Input>
+                    <Input
+                      className={styles.input}
+                      value={Math.round(item.seismic_x)}
+                      suffix=""
+                      onChange={(e) => {
+                        const newValue = Number(e.currentTarget.value);
+                        if (Number.isNaN(newValue)) {
+                          return;
+                        }
+                        handleInputChange(i, "seismic_x", newValue);
+                      }}
+                    ></Input>
+                    <Input
+                      className={styles.input}
+                      value={Math.round(item.seismic_y)}
+                      suffix=""
+                      onChange={(e) => {
+                        const newValue = Number(e.currentTarget.value);
+                        if (Number.isNaN(newValue)) {
+                          return;
+                        }
+                        handleInputChange(i, "seismic_y", newValue);
+                      }}
+                    ></Input>
+                  </Flex>
+                );
+              })}
+            </div>
           )}
         </Flex>
 

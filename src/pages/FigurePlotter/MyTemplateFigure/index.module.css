@@ -13,6 +13,9 @@
     max-width: 200px;
     width: 20%;
 }
+.data{
+    overflow-y: auto;
+}
 
 .inputTitle{
     background-color:#a1a3a9;

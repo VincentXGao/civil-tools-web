@@ -158,112 +158,115 @@ const ShearMomentFigure: React.FC = () => {
             <div className={styles.input}>小震X向</div>
             <div className={styles.input}>小震Y向</div>
           </Flex>
-          <Flex
-            justify="right"
-            align="center"
-            style={{ margin: "5px 20px 20px 10px" }}
-          >
-            <div>楼层增减</div>
-            <Button
-              style={{ marginLeft: "20px" }}
-              onClick={() => {
-                const newData: floorData[] = [
-                  {
-                    floor: shearMomentValue[0].floor + 1,
-                    seismic_x: shearMomentValue[0].seismic_x,
-                    seismic_y: shearMomentValue[0].seismic_y,
-                    wind_x: shearMomentValue[0].wind_x,
-                    wind_y: shearMomentValue[0].wind_y,
-                  },
-                  ...shearMomentValue,
-                ];
-                // newData[0].floor = newData[0].floor + 1;
-                setShearMomentValue(newData);
-                setFloorNum(newData.length);
-              }}
-            >
-              +
-            </Button>
-            <Button
-              style={{ marginLeft: "20px" }}
-              onClick={() => {
-                if (shearMomentValue.length <= 1) {
-                  return;
-                }
-                const newData = shearMomentValue.slice(
-                  1,
-                  shearMomentValue.length
-                );
-                setShearMomentValue(newData);
-                setFloorNum(newData.length);
-              }}
-            >
-              -
-            </Button>
-          </Flex>
+
           {dataLoading ? (
             <h1>加载中...</h1>
           ) : (
-            shearMomentValue.map((item, i) => {
-              return (
-                <Flex
-                  key={item.floor}
-                  align="center"
-                  justify="space-between"
-                  className={styles.inputList}
+            <div className={styles.data}>
+              <Flex
+                justify="right"
+                align="center"
+                style={{ margin: "5px 20px 20px 10px" }}
+              >
+                <div>楼层增减</div>
+                <Button
+                  style={{ marginLeft: "20px" }}
+                  onClick={() => {
+                    const newData: floorData[] = [
+                      {
+                        floor: shearMomentValue[0].floor + 1,
+                        seismic_x: shearMomentValue[0].seismic_x,
+                        seismic_y: shearMomentValue[0].seismic_y,
+                        wind_x: shearMomentValue[0].wind_x,
+                        wind_y: shearMomentValue[0].wind_y,
+                      },
+                      ...shearMomentValue,
+                    ];
+                    // newData[0].floor = newData[0].floor + 1;
+                    setShearMomentValue(newData);
+                    setFloorNum(newData.length);
+                  }}
                 >
-                  <div style={{ width: "10%" }}>{`${item.floor}层`}</div>
-                  <Input
-                    className={styles.input}
-                    value={Math.round(item.wind_x)}
-                    suffix={selectedOption}
-                    onChange={(e) => {
-                      const newValue = Number(e.currentTarget.value);
-                      if (Number.isNaN(newValue)) {
-                        return;
-                      }
-                      handleInputChange(i, "wind_x", newValue);
-                    }}
-                  ></Input>
-                  <Input
-                    className={styles.input}
-                    value={Math.round(item.wind_y)}
-                    suffix={selectedOption}
-                    onChange={(e) => {
-                      const newValue = Number(e.currentTarget.value);
-                      if (Number.isNaN(newValue)) {
-                        return;
-                      }
-                      handleInputChange(i, "wind_y", newValue);
-                    }}
-                  ></Input>
-                  <Input
-                    className={styles.input}
-                    value={Math.round(item.seismic_x)}
-                    suffix={selectedOption}
-                    onChange={(e) => {
-                      const newValue = Number(e.currentTarget.value);
-                      if (Number.isNaN(newValue)) {
-                        return;
-                      }
-                      handleInputChange(i, "seismic_x", newValue);
-                    }}
-                  ></Input>
-                  <Input
-                    className={styles.input}
-                    value={Math.round(item.seismic_y)}
-                    suffix={selectedOption}
-                    onChange={(e) => {
-                      const newValue = Number(e.currentTarget.value);
-                      if (Number.isNaN(newValue)) {
-                        return;
-                      }
-                      handleInputChange(i, "seismic_y", newValue);
-                    }}
-                  ></Input>
-                </Flex>
-              );
-            })
+                  +
+                </Button>
+                <Button
+                  style={{ marginLeft: "20px" }}
+                  onClick={() => {
+                    if (shearMomentValue.length <= 1) {
+                      return;
+                    }
+                    const newData = shearMomentValue.slice(
+                      1,
+                      shearMomentValue.length
+                    );
+                    setShearMomentValue(newData);
+                    setFloorNum(newData.length);
+                  }}
+                >
+                  -
+                </Button>
+              </Flex>
+              {shearMomentValue.map((item, i) => {
+                return (
+                  <Flex
+                    key={item.floor}
+                    align="center"
+                    justify="space-between"
+                    className={styles.inputList}
+                  >
+                    <div style={{ width: "10%" }}>{`${item.floor}层`}</div>
+                    <Input
+                      className={styles.input}
+                      value={Math.round(item.wind_x)}
+                      suffix={selectedOption}
+                      onChange={(e) => {
+                        const newValue = Number(e.currentTarget.value);
+                        if (Number.isNaN(newValue)) {
+                          return;
+                        }
+                        handleInputChange(i, "wind_x", newValue);
+                      }}
+                    ></Input>
+                    <Input
+                      className={styles.input}
+                      value={Math.round(item.wind_y)}
+                      suffix={selectedOption}
+                      onChange={(e) => {
+                        const newValue = Number(e.currentTarget.value);
+                        if (Number.isNaN(newValue)) {
+                          return;
+                        }
+                        handleInputChange(i, "wind_y", newValue);
+                      }}
+                    ></Input>
+                    <Input
+                      className={styles.input}
+                      value={Math.round(item.seismic_x)}
+                      suffix={selectedOption}
+                      onChange={(e) => {
+                        const newValue = Number(e.currentTarget.value);
+                        if (Number.isNaN(newValue)) {
+                          return;
+                        }
+                        handleInputChange(i, "seismic_x", newValue);
+                      }}
+                    ></Input>
+                    <Input
+                      className={styles.input}
+                      value={Math.round(item.seismic_y)}
+                      suffix={selectedOption}
+                      onChange={(e) => {
+                        const newValue = Number(e.currentTarget.value);
+                        if (Number.isNaN(newValue)) {
+                          return;
+                        }
+                        handleInputChange(i, "seismic_y", newValue);
+                      }}
+                    ></Input>
+                  </Flex>
+                );
+              })}
+            </div>
           )}
         </Flex>
 
