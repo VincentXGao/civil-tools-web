@@ -6,12 +6,12 @@ import {
   FileDoneOutlined,
   FileWordOutlined,
 } from "@ant-design/icons";
-import { Layout, Menu, Flex, Button, Modal, Image } from "antd";
+import { Layout, Menu, Flex, Button, Modal, Image, Col, Row } from "antd";
 import { Outlet } from "react-router-dom";
 import { useNavigate } from "react-router";
 import type { MenuInfo } from "rc-menu/lib/interface";
-import wechatSupportImageURL from "/public/wechat-support.png";
-import alipaySupportImageURL from "/public/alipay-support.png";
+import wechatSupportImageURL from "/wechat-support.png";
+import alipaySupportImageURL from "/alipay-support.png";
 
 const { Header, Content, Footer, Sider } = Layout;
 
@@ -45,14 +45,23 @@ const navigatePath: { [key: string]: string } = {
   "2-2": "./seismicReviewReport",
 };
 
+const subTitlePath: { [key: string]: string } = {
+  "1-1": "剪重比绘图",
+  "1-2": "剪力弯矩绘图",
+  "1-3": "层间位移角绘图",
+  "2-1": "楼梯计算书",
+  "2-2": "超限报告生成",
+};
+
 const BasicLayout: React.FC = () => {
   const navigate = useNavigate();
   const handleMenuChanged = (event: MenuInfo) => {
     navigate(navigatePath[event.key]);
+    setSubTitle(subTitlePath[event.key]);
   };
   // 打赏框
   const [isModalOpen, setIsModalOpen] = useState(false);
-
+  const [subTitle, setSubTitle] = useState<string>("");
   const [title, setTitle] = useState<string>("结构工具箱");
 
   return (
@@ -88,17 +97,24 @@ const BasicLayout: React.FC = () => {
       </Sider>
       <Layout style={{ minWidth: "500px" }}>
         <Header style={{ padding: 0, background: "#a7c190" }}>
-          <Flex justify="right" align="center" style={{ height: "100%" }}>
-            <Button
-              type="primary"
-              style={{ marginRight: "20px" }}
-              onClick={() => {
-                setIsModalOpen(true);
-              }}
-            >
-              支持一下
-            </Button>
-          </Flex>
+          <Row style={{ height: "100%" }}>
+            <Col span={20}>
+              <div style={{ fontSize: "20px" }}>{subTitle}</div>
+            </Col>
+            <Col span={4}>
+              <Flex justify="right" align="center" style={{ height: "100%" }}>
+                <Button
+                  type="primary"
+                  style={{ marginRight: "20px" }}
+                  onClick={() => {
+                    setIsModalOpen(true);
+                  }}
+                >
+                  支持一下
+                </Button>
+              </Flex>
+            </Col>
+          </Row>
 
           <Modal
             title="如果你觉得这个网页有用，可以请我喝杯奶茶哦~"
@@ -110,16 +126,26 @@ const BasicLayout: React.FC = () => {
             }}
           >
             <Flex justify="space-around">
-              <Image
-                src={wechatSupportImageURL}
-                preview={false}
-                height={200}
-              ></Image>
-              <Image
-                src={alipaySupportImageURL}
-                preview={false}
-                height={200}
-              ></Image>
+              <Flex vertical align="center">
+                <div>微信扫一扫赞助</div>
+                <Image
+                  src={wechatSupportImageURL}
+                  preview={false}
+                  height={200}
+                ></Image>
+              </Flex>
+              <Flex vertical align="center">
+                <div>支付宝扫一扫赞助</div>
+                <Image
+                  src={alipaySupportImageURL}
+                  preview={false}
+                  height={160}
+                  style={{ marginTop: "15px" }}
+                ></Image>
+              </Flex>
+            </Flex>
+            <Flex justify="center" style={{ color: "gray" }}>
+              如有需要可加我微信 gao_happy_hi 交流，有问必答
             </Flex>
           </Modal>
         </Header>
@@ -127,8 +153,7 @@ const BasicLayout: React.FC = () => {
           <Outlet></Outlet>
         </Content>
         <Footer style={{ textAlign: "center" }}>
-          Ant and Vincent Design ©{new Date().getFullYear()} Created by Ant UED
-          and Vincent
+          Vincent Design ©{new Date().getFullYear()} Created by Vincent
         </Footer>
       </Layout>
     </Layout>
