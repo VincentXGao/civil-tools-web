@@ -13,6 +13,9 @@ import {
   downLoadFigure,
 } from "../Utils";
 
+// 获取主颜色
+const mainColor = import.meta.env.VITE_MAIN_COLORS.split(",");
+
 type historyData = {
   value: string;
   label: string;
@@ -135,6 +138,7 @@ const ShearMassRatioFigure: React.FC = () => {
           align="center"
           justify="space-between"
           className={styles.inputTitle}
+          style={{ backgroundColor: mainColor[3] }}
         >
           <div style={{ width: "10%" }}>层号</div>
           <div className={styles.input}>X方向剪力</div>

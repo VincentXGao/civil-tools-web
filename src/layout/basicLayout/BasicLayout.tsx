@@ -15,6 +15,9 @@ import alipaySupportImageURL from "/alipay-support.png";
 
 const { Header, Content, Footer, Sider } = Layout;
 
+// 获取主颜色
+const mainColor = import.meta.env.VITE_MAIN_COLORS.split(",");
+
 const menuItems = [
   {
     key: "1",
@@ -68,7 +71,7 @@ const BasicLayout: React.FC = () => {
     <Layout style={{ height: "100vh" }}>
       <Sider
         breakpoint="md"
-        style={{ backgroundColor: "#6b8857" }}
+        style={{ backgroundColor: mainColor[1] }}
         collapsedWidth="75"
         onBreakpoint={(broken) => {
           setTitle(broken ? "CivilTool" : "结构工具箱");
@@ -96,7 +99,7 @@ const BasicLayout: React.FC = () => {
         />
       </Sider>
       <Layout style={{ minWidth: "500px" }}>
-        <Header style={{ padding: 0, background: "#a7c190" }}>
+        <Header style={{ padding: 0, background: mainColor[2] }}>
           <Row style={{ height: "100%" }}>
             <Col span={20}>
               <div style={{ fontSize: "20px" }}>{subTitle}</div>

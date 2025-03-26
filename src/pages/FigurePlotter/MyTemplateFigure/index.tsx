@@ -21,6 +21,9 @@ import styles from "./index.module.css";
 import { driftPlot } from "@/apis/figurePlotter";
 import { extractDriftData } from "@/apis/ydbDataExtract";
 
+// 获取主颜色
+const mainColor = import.meta.env.VITE_MAIN_COLORS.split(",");
+
 type historyData = {
   value: string;
   label: string;
@@ -134,6 +137,7 @@ const MyFigurePlotter: React.FC = () => {
             align="center"
             justify="space-between"
             className={styles.inputTitle}
+            style={{ backgroundColor: mainColor[3] }}
           >
             <div style={{ width: "10%" }}>层号</div>
             <div className={styles.input}>风X向</div>

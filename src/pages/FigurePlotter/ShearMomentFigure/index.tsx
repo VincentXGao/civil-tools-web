@@ -23,6 +23,8 @@ import {
   saveHitoryData,
 } from "../Utils";
 
+// 获取主颜色
+const mainColor = import.meta.env.VITE_MAIN_COLORS.split(",");
 // 处理输入值的变化
 
 type historyData = {
@@ -151,6 +153,7 @@ const ShearMomentFigure: React.FC = () => {
             align="center"
             justify="space-between"
             className={styles.inputTitle}
+            style={{ backgroundColor: mainColor[3] }}
           >
             <div style={{ width: "10%" }}>层号</div>
             <div className={styles.input}>风X向</div>

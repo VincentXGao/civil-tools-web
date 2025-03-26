@@ -17,8 +17,8 @@
 .data{
     overflow-y: auto;
 }
+
 .inputTitle{
-    background-color:#a1a3a9;
     border-radius: 10px;
     font-size: 18px;
     margin: 10px 0px 10px 0px ;
