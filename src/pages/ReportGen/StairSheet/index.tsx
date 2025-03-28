@@ -1,8 +1,11 @@
 import { stairCalculateSheetGen } from "@/apis/reportGen";
 import { downLoadDocx } from "@/pages/FigurePlotter/Utils";
-import { Button, Flex, Col, Row } from "antd";
+import { Button, Flex, Col, Row, message } from "antd";
 import { renderAsync } from "docx-preview";
 import React, { useEffect, useRef, useState } from "react";
+import ReconnectingWebSocket from "reconnecting-websocket";
+
+const base_url = "localhost:8000";
 
 const docViewStyle = {
   width: "100%",
@@ -15,6 +18,9 @@ const docViewStyle = {
 const StairSheet: React.FC = () => {
   const viewerRef = useRef(null);
   const [file, setFile] = useState<Blob>();
+  const [textString, setTextString] = useState<string>("Nothing");
+
+  let socket: ReconnectingWebSocket;
 
   useEffect(() => {
     if (!file || !viewerRef.current) return;
@@ -71,3 +77,31 @@ const StairSheet: React.FC = () => {
   );
 };
 export default StairSheet;
+
+// <Button
+//   onClick={() => {
+//     const wsUrl = `ws://${base_url}/ws/report_generate`;
+//     socket = new ReconnectingWebSocket(wsUrl);
+//     socket.onmessage = (e) => {
+//       console.log("我收到了websocket的消息", e);
+//       const data = JSON.parse(e.data);
+//       setTextString(data.status);
+//       if (data.canClose == true) {
+//         socket.close();
+//       }
+//     };
+//     const message = { message: "你好呀！！！" };
+//     socket.send(JSON.stringify(message));
+//   }}
+// >
+//   链接WebSocket
+// </Button>
+// <Button
+//   onClick={() => {
+//     socket.close();
+//     setTextString("Nothing");
+//   }}
+// >
+//   断开WebSocket
+// </Button>
+// <div>{textString}</div>

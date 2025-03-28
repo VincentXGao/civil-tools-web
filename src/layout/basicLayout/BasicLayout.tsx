@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ToolFilled,
   AreaChartOutlined,
@@ -8,7 +8,7 @@ import {
 } from "@ant-design/icons";
 import { Layout, Menu, Flex, Button, Modal, Image, Col, Row } from "antd";
 import { Outlet } from "react-router-dom";
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router";
 import type { MenuInfo } from "rc-menu/lib/interface";
 import wechatSupportImageURL from "/wechat-support.png";
 import alipaySupportImageURL from "/alipay-support.png";
@@ -41,6 +41,7 @@ const menuItems = [
 ];
 
 const navigatePath: { [key: string]: string } = {
+  welcome: "./",
   "1-1": "./shearMassRatio",
   "1-2": "./shearMomentFigure",
   "1-3": "./driftFigure",
@@ -58,17 +59,40 @@ const subTitlePath: { [key: string]: string } = {
 
 const BasicLayout: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const handleMenuChanged = (event: MenuInfo) => {
     navigate(navigatePath[event.key]);
     setSubTitle(subTitlePath[event.key]);
   };
+
   // 打赏框
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [subTitle, setSubTitle] = useState<string>("");
+  const [subTitle, setSubTitle] = useState<string>("结构工具箱");
   const [title, setTitle] = useState<string>("结构工具箱");
 
+  useEffect(() => {
+    const currentUrl = location.pathname;
+    for (const key in subTitlePath) {
+      if (subTitlePath.hasOwnProperty(key)) {
+        let urlPath = navigatePath[key];
+        urlPath = urlPath.slice(1, urlPath.length);
+        if (currentUrl.endsWith(urlPath)) {
+          setSubTitle(subTitlePath[key]);
+          break;
+        }
+      }
+    }
+  }, []);
+
+  const backToWelcome = () => {
+    navigate(navigatePath["welcome"]);
+    setSubTitle(title);
+  };
+
+  const borderRadius = "20px";
+
   return (
-    <Layout style={{ height: "100vh" }}>
+    <Layout style={{ height: "100vh", backgroundColor: mainColor[1] }}>
       <Sider
         breakpoint="md"
         style={{ backgroundColor: mainColor[1] }}
@@ -88,18 +112,37 @@ const BasicLayout: React.FC = () => {
               fontSize: "30px",
               marginBottom: "10px",
             }}
+            onClick={backToWelcome}
           />
           <div>{title}</div>
         </Flex>
         <Menu
+          inlineIndent={12}
           mode="inline"
           defaultOpenKeys={["1"]}
           onClick={handleMenuChanged}
           items={menuItems}
+          style={{
+            borderRadius: "10px",
+            margin: "10px",
+            width: "calc( 100% - 20px) ",
+          }}
         />
       </Sider>
-      <Layout style={{ minWidth: "500px" }}>
-        <Header style={{ padding: 0, background: mainColor[2] }}>
+      <Layout
+        style={{
+          minWidth: "500px",
+          borderRadius: borderRadius,
+          margin: "10px 10px 10px 0px",
+        }}
+      >
+        <Header
+          style={{
+            padding: 0,
+            background: mainColor[2],
+            borderRadius: borderRadius,
+          }}
+        >
           <Row style={{ height: "100%" }}>
             <Col span={20}>
               <div style={{ fontSize: "20px" }}>{subTitle}</div>
@@ -155,7 +198,7 @@ const BasicLayout: React.FC = () => {
         <Content style={{ margin: "24px 16px 0", overflow: "hidden" }}>
           <Outlet></Outlet>
         </Content>
-        <Footer style={{ textAlign: "center" }}>
+        <Footer style={{ textAlign: "center", borderRadius: borderRadius }}>
           Vincent Design ©{new Date().getFullYear()} Created by Vincent
         </Footer>
       </Layout>

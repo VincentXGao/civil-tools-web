@@ -5,6 +5,8 @@ import StairSheet from "@/pages/ReportGen/StairSheet";
 import SeismicReviewReport from "@/pages/ReportGen/SeismicReviewReport";
 
 // 懒加载组件
+const Welcome = lazy(() => import("@/pages/Welcome"));
+
 const ShearMassRatioFigure = lazy(
   () => import("@/pages/FigurePlotter/ShearMassRatioFigure")
 );
@@ -28,7 +30,7 @@ const routes: RouteObject[] = [
     children: [
       {
         index: true,
-        element: <h1>啥也没选</h1>,
+        element: <Welcome />,
       },
       {
         path: "/mainPage/shearMassRatio",
