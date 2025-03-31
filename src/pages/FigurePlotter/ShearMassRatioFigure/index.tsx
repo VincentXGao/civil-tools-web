@@ -15,7 +15,7 @@ import {
 
 // 获取主颜色
 const mainColor = import.meta.env.VITE_MAIN_COLORS.split(",");
-
+console.log(import.meta.env.VITE_MAIN_COLORS);
 type historyData = {
   value: string;
   label: string;

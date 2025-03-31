@@ -140,7 +140,7 @@ const BasicLayout: React.FC = () => {
           style={{
             padding: 0,
             background: mainColor[2],
-            borderRadius: borderRadius,
+            borderRadius: `${borderRadius} ${borderRadius} 0px 0px `,
           }}
         >
           <Row style={{ height: "100%" }}>
