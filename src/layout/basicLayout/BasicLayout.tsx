@@ -5,6 +5,7 @@ import {
   LineChartOutlined,
   FileDoneOutlined,
   FileWordOutlined,
+  GithubOutlined,
 } from "@ant-design/icons";
 import { Layout, Menu, Flex, Button, Modal, Image, Col, Row } from "antd";
 import { Outlet } from "react-router-dom";
@@ -144,7 +145,8 @@ const BasicLayout: React.FC = () => {
           }}
         >
           <Row style={{ height: "100%" }}>
-            <Col span={20}>
+            <Col span={4}></Col>
+            <Col span={16}>
               <div style={{ fontSize: "20px" }}>{subTitle}</div>
             </Col>
             <Col span={4}>
@@ -199,7 +201,18 @@ const BasicLayout: React.FC = () => {
           <Outlet></Outlet>
         </Content>
         <Footer style={{ textAlign: "center", borderRadius: borderRadius }}>
-          Vincent Design ©{new Date().getFullYear()} Created by Vincent
+          <Flex justify="center" align="center">
+            <div>
+              Vincent Design ©{new Date().getFullYear()} Created by Vincent.
+              See the repositories of this website in
+            </div>
+            <GithubOutlined
+              style={{ fontSize: "30px", marginLeft: "10px" }}
+              onClick={() => {
+                window.open("https://github.com/VincentXGao");
+              }}
+            />
+          </Flex>
         </Footer>
       </Layout>
     </Layout>
