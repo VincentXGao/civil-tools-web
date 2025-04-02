@@ -7,7 +7,10 @@ import ReconnectingWebSocket from "reconnecting-websocket";
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 import styles from "./index.module.less";
 import type { SingleStairData } from "@/types";
+import { dataTitle2 } from "./possibleComponents";
 
+// 获取主颜色
+const mainColor = import.meta.env.VITE_MAIN_COLORS.split(",");
 const docViewStyle = {
   width: "100%",
   height: "700px",
@@ -23,6 +26,8 @@ const defaultSingleStairDat: SingleStairData = {
   leftSlabThick: 120,
   mainSlabThick: 120,
   rightSlabThick: 120,
+  leftBeamOffset: 0,
+  rightBeamOffset: 0,
 };
 
 const creatInpIt = (
@@ -75,71 +80,127 @@ const StairSheet: React.FC = () => {
     name: number,
     restField: [array: FormListFieldData[]]
   ) => {
+    let showTitle = name >= 0;
+    // showTitle = true;
     return (
       <>
         <Flex>
-          {creatInpIt(name, restField, "leftSlabLen", "左板X长")}
-          {creatInpIt(name, restField, "mainSlabLen", "梯段X长")}
-          {creatInpIt(name, restField, "rightSlabLen", "右板X长")}
-          {creatInpIt(name, restField, "stairHeight", "左右高差")}
+          <Flex vertical>
+            {showTitle ? <div>左板X长</div> : <></>}
+            {creatInpIt(name, restField, "leftSlabLen", "左板X长")}
+          </Flex>
+          <Flex vertical>
+            {showTitle ? <div>梯段X长</div> : <></>}
+            {creatInpIt(name, restField, "mainSlabLen", "梯段X长")}
+          </Flex>
+          <Flex vertical>
+            {showTitle ? <div>右板X长</div> : <></>}
+            {creatInpIt(name, restField, "rightSlabLen", "右板X长")}
+          </Flex>
+          <Flex vertical>
+            {showTitle ? <div>左右高差</div> : <></>}
+            {creatInpIt(name, restField, "stairHeight", "左右高差")}
+          </Flex>
         </Flex>
         <Flex>
-          {creatInpIt(name, restField, "leftSlabThick", "左板板厚", 100, 400)}
-          {creatInpIt(name, restField, "mainSlabThick", "梯段板厚", 100, 400)}
-          {creatInpIt(name, restField, "rightSlabThick", "右板板厚", 100, 400)}
+          <Flex vertical>
+            {showTitle ? <div>左板板厚</div> : <></>}{" "}
+            {creatInpIt(name, restField, "leftSlabThick", "左板板厚", 100, 400)}
+          </Flex>
+          <Flex vertical>
+            {showTitle ? <div>梯段板厚</div> : <></>}{" "}
+            {creatInpIt(name, restField, "mainSlabThick", "梯段板厚", 100, 400)}
+          </Flex>
+          <Flex vertical>
+            {showTitle ? <div>右板板厚</div> : <></>}{" "}
+            {creatInpIt(
+              name,
+              restField,
+              "rightSlabThick",
+              "右板板厚",
+              100,
+              400
+            )}
+          </Flex>
+          <Flex vertical>
+            {showTitle ? <div>左梁偏置</div> : <></>}{" "}
+            {creatInpIt(name, restField, "leftBeamOffset", "左梁偏置", 0, 2000)}
+          </Flex>
+          <Flex vertical>
+            {showTitle ? <div>右梁偏置</div> : <></>}{" "}
+            {creatInpIt(
+              name,
+              restField,
+              "rightBeamOffset",
+              "右梁偏置",
+              0,
+              2000
+            )}
+          </Flex>
         </Flex>
       </>
     );
   };
+  const dataTitle = (
+    <div className={styles.dataTitle} style={{ backgroundColor: mainColor[3] }}>
+      {dataTitle2}
+    </div>
+  );
   const stairInfoForm = (
     <Form
       name="dynamic_form_nest_item"
       onFinish={onFinish}
-      style={{ maxWidth: 600 }}
       autoComplete="off"
+      style={{ height: "100%" }}
       initialValues={{ stairs: [defaultSingleStairDat] }}
     >
       <Form.List name="stairs">
         {(fields, { add, remove }) => (
           <>
-            {fields.map((field, name, ...restField) => (
-              <Row key={field.key} className={styles.stairDataInput}>
-                <Col span={22}>{inputItems(name, restField)}</Col>
-                <Col span={2}>
-                  <Flex
-                    align="center"
-                    justify="center"
-                    style={{ height: "100%" }}
-                  >
-                    <MinusCircleOutlined onClick={() => remove(name)} />
-                  </Flex>
-                </Col>
-              </Row>
-            ))}
+            <div className={styles.rollingData}>
+              {fields.map((field, name, ...restField) => (
+                <Row key={field.key} className={styles.stairDataInput}>
+                  <Col span={22}>{inputItems(name, restField)}</Col>
+                  <Col span={2}>
+                    <Flex
+                      align="center"
+                      justify="center"
+                      style={{ height: "100%" }}
+                    >
+                      <MinusCircleOutlined onClick={() => remove(name)} />
+                    </Flex>
+                  </Col>
+                </Row>
+              ))}
+              <Form.Item>
+                <Button
+                  type="dashed"
+                  onClick={() => add(defaultSingleStairDat)}
+                  block
+                  icon={<PlusOutlined />}
+                >
+                  Add field
+                </Button>
+              </Form.Item>
+            </div>
+
             <Form.Item>
-              <Button
-                type="dashed"
-                onClick={() => add(defaultSingleStairDat)}
-                block
-                icon={<PlusOutlined />}
-              >
-                Add field
+              <Button type="primary" htmlType="submit">
+                Submit
               </Button>
             </Form.Item>
           </>
         )}
       </Form.List>
-      <Form.Item>
-        <Button type="primary" htmlType="submit">
-          Submit
-        </Button>
-      </Form.Item>
     </Form>
   );
 
   return (
     <Row style={{ height: "100%" }}>
-      <Col span={12}>{stairInfoForm}</Col>
+      <Col span={12} style={{ height: "100%" }}>
+        {dataTitle}
+        {stairInfoForm}
+      </Col>
       <Col span={12}>
         <Flex
           vertical

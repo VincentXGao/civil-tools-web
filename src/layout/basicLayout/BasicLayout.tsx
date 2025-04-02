@@ -135,6 +135,7 @@ const BasicLayout: React.FC = () => {
           minWidth: "500px",
           borderRadius: borderRadius,
           margin: "10px 10px 10px 0px",
+          backgroundColor: mainColor[4],
         }}
       >
         <Header
@@ -197,11 +198,23 @@ const BasicLayout: React.FC = () => {
             </Flex>
           </Modal>
         </Header>
-        <Content style={{ margin: "24px 16px 0", overflow: "hidden" }}>
+        <Content
+          style={{
+            margin: "24px 16px 0",
+            overflow: "hidden",
+            backgroundColor: mainColor[4],
+          }}
+        >
           <Outlet></Outlet>
         </Content>
-        <Footer style={{ textAlign: "center", borderRadius: borderRadius }}>
-          <Flex justify="center" align="center">
+        <Footer
+          style={{
+            textAlign: "center",
+            borderRadius: borderRadius,
+            height: "7%",
+          }}
+        >
+          <Flex justify="center" align="center" style={{ height: "100%" }}>
             <div>
               Vincent Design ©{new Date().getFullYear()} Created by Vincent.
               See the repositories of this website in

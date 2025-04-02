@@ -6,5 +6,7 @@ export type SingleStairData = {
     leftSlabThick: number,
     mainSlabThick: number,
     rightSlabThick: number,
+    leftBeamOffset: number,
+    rightBeamOffset: number
 }
 

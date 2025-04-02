@@ -1,7 +1,37 @@
+.dataTitle{
+  height: 5%;
+  margin: 5px 5px 5px 0px ;
+  padding: 3px;
+  font-size: 20px;
+  border-radius: 10px;
+}
+
+.dataItem{
+  font-size: 16px;
+}
+.rollingData{
+  position: relative;
+  height: 50%;
+  overflow-y: auto;
+
+}
+.rollingData::after {
+  content: "";
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 70px;
+  background: linear-gradient(to top, #f2f2f2, rgba(255, 255, 255, 0));
+  display: block;
+  pointer-events: none; /* 避免遮挡点击事件 */
+}
+
 .stairDataInput{
   border: 1px dashed black;
   border-radius: 10px;
   padding: 3px;
+  margin: 5px 5px 5px 0px ;
   
 }
 
