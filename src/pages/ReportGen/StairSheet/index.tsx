@@ -1,13 +1,25 @@
-import { stairCalculateSheetGen } from "@/apis/reportGen";
+import { downLoadFile } from "@/apis/reportGen";
 import { downLoadDocx } from "@/pages/FigurePlotter/Utils";
-import { Button, Flex, Col, Row, Form, Input, FormListFieldData } from "antd";
+import {
+  Button,
+  Flex,
+  Col,
+  Row,
+  Form,
+  Input,
+  FormListFieldData,
+  Select,
+  InputNumber,
+} from "antd";
 import { renderAsync } from "docx-preview";
-import React, { useEffect, useRef, useState } from "react";
+import React, { JSX, useEffect, useRef, useState } from "react";
 import ReconnectingWebSocket from "reconnecting-websocket";
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 import styles from "./index.module.less";
-import type { SingleStairData } from "@/types";
+import type { SingleStairData, StairGlobalInfo } from "@/types";
 import { dataTitle2 } from "./possibleComponents";
+
+const base_url = "localhost:8000";
 
 // 获取主颜色
 const mainColor = import.meta.env.VITE_MAIN_COLORS.split(",");
@@ -29,11 +41,20 @@ const defaultSingleStairDat: SingleStairData = {
   leftBeamOffset: 0,
   rightBeamOffset: 0,
 };
+const defaultGlobalInfo: StairGlobalInfo = {
+  appendDeadLoad: 1.5,
+  liveLoad: 3.5,
+  concreteLevel: 30,
+  coverThickness: 15,
+  dispLimitCoeff: 300,
+  crackWidthLimit: 0.3,
+};
 
 const creatInpIt = (
   name: number,
   restField: [array: FormListFieldData[]],
   keyString: keyof SingleStairData,
+  symbol: string,
   describ: string,
   minValue: number = 50,
   maxValue: number = 5000
@@ -41,7 +62,7 @@ const creatInpIt = (
   return (
     <Form.Item
       {...restField}
-      name={[name, keyString]}
+      name={[`${name}`, keyString]}
       rules={[
         {
           type: "number",
@@ -53,8 +74,10 @@ const creatInpIt = (
         },
       ]}
       className={styles.singleInput}
+      label={symbol}
+      tooltip={describ}
     >
-      <Input placeholder={describ} />
+      <InputNumber placeholder={describ} />
     </Form.Item>
   );
 };
@@ -62,9 +85,8 @@ const creatInpIt = (
 const StairSheet: React.FC = () => {
   const viewerRef = useRef(null);
   const [file, setFile] = useState<Blob>();
-  // const [textString, setTextString] = useState<string>("Nothing");
 
-  // let socket: ReconnectingWebSocket;
+  let socket: ReconnectingWebSocket;
 
   useEffect(() => {
     if (!file || !viewerRef.current) return;
@@ -73,43 +95,75 @@ const StairSheet: React.FC = () => {
       console.error("DOCX预览失败:", err)
     );
   }, [file]);
+
   const onFinish = (values: any) => {
+    setFile(undefined);
     console.log("Received values of form:", values);
+    const wsUrl = `ws://${base_url}/ws/stair_report_generate`;
+    socket = new ReconnectingWebSocket(wsUrl);
+    socket.onmessage = async (e) => {
+      console.log("我收到了websocket的消息", e);
+      const data = JSON.parse(e.data);
+      if (data.canClose == true) {
+        socket.close();
+        const testFile = await downLoadFile({
+          filePath: data.filePath,
+        });
+        setFile(testFile);
+      }
+    };
+    socket.send(JSON.stringify(values));
   };
   const inputItems = (
     name: number,
     restField: [array: FormListFieldData[]]
   ) => {
-    let showTitle = name >= 0;
+    let showTitle = name < 0;
     // showTitle = true;
     return (
       <>
         <Flex>
           <Flex vertical>
             {showTitle ? <div>左板X长</div> : <></>}
-            {creatInpIt(name, restField, "leftSlabLen", "左板X长")}
+            {creatInpIt(name, restField, "leftSlabLen", "Ll", "左板X长")}
           </Flex>
           <Flex vertical>
             {showTitle ? <div>梯段X长</div> : <></>}
-            {creatInpIt(name, restField, "mainSlabLen", "梯段X长")}
+            {creatInpIt(name, restField, "mainSlabLen", "Lm", "梯段X长")}
           </Flex>
           <Flex vertical>
             {showTitle ? <div>右板X长</div> : <></>}
-            {creatInpIt(name, restField, "rightSlabLen", "右板X长")}
+            {creatInpIt(name, restField, "rightSlabLen", "Lr", "右板X长")}
           </Flex>
           <Flex vertical>
             {showTitle ? <div>左右高差</div> : <></>}
-            {creatInpIt(name, restField, "stairHeight", "左右高差")}
+            {creatInpIt(name, restField, "stairHeight", "H", "左右高差")}
           </Flex>
         </Flex>
         <Flex>
           <Flex vertical>
             {showTitle ? <div>左板板厚</div> : <></>}{" "}
-            {creatInpIt(name, restField, "leftSlabThick", "左板板厚", 100, 400)}
+            {creatInpIt(
+              name,
+              restField,
+              "leftSlabThick",
+              "Tl",
+              "左板板厚",
+              100,
+              400
+            )}
           </Flex>
           <Flex vertical>
             {showTitle ? <div>梯段板厚</div> : <></>}{" "}
-            {creatInpIt(name, restField, "mainSlabThick", "梯段板厚", 100, 400)}
+            {creatInpIt(
+              name,
+              restField,
+              "mainSlabThick",
+              "Tm",
+              "梯段板厚",
+              100,
+              400
+            )}
           </Flex>
           <Flex vertical>
             {showTitle ? <div>右板板厚</div> : <></>}{" "}
@@ -117,14 +171,25 @@ const StairSheet: React.FC = () => {
               name,
               restField,
               "rightSlabThick",
+              "Tr",
               "右板板厚",
               100,
               400
             )}
           </Flex>
+        </Flex>
+        <Flex>
           <Flex vertical>
             {showTitle ? <div>左梁偏置</div> : <></>}{" "}
-            {creatInpIt(name, restField, "leftBeamOffset", "左梁偏置", 0, 2000)}
+            {creatInpIt(
+              name,
+              restField,
+              "leftBeamOffset",
+              "Ol",
+              "左梁偏置",
+              0,
+              2000
+            )}
           </Flex>
           <Flex vertical>
             {showTitle ? <div>右梁偏置</div> : <></>}{" "}
@@ -132,6 +197,7 @@ const StairSheet: React.FC = () => {
               name,
               restField,
               "rightBeamOffset",
+              "Or",
               "右梁偏置",
               0,
               2000
@@ -141,65 +207,156 @@ const StairSheet: React.FC = () => {
       </>
     );
   };
-  const dataTitle = (
+  const dataTitle = (data: JSX.Element) => (
     <div className={styles.dataTitle} style={{ backgroundColor: mainColor[3] }}>
-      {dataTitle2}
+      {data}
+    </div>
+  );
+
+  const globalInfoForm = (
+    <div className={styles.GIRollingData}>
+      <Flex>
+        <Form.Item
+          name={["globalInfo", "appendDeadLoad"]}
+          label="附加恒载"
+          tooltip="一般为建筑面层重量"
+          className={styles.GISingleInput}
+        >
+          <Input
+            placeholder="请输入附加恒载"
+            suffix="kN/m2"
+            style={{ minWidth: "100px" }}
+          />
+        </Form.Item>
+        <Form.Item
+          name={["globalInfo", "liveLoad"]}
+          label="活载"
+          tooltip="规范一般规定为3.5"
+          className={styles.GISingleInput}
+        >
+          <Input
+            placeholder="请输入活载"
+            suffix="kN/m2"
+            style={{ minWidth: "100px" }}
+          />
+        </Form.Item>
+        <Form.Item
+          name={["globalInfo", "coverThickness"]}
+          label="保护层厚度"
+          tooltip="默认为15mm"
+          className={styles.GISingleInput}
+        >
+          <Input
+            placeholder="请输入保护层厚度"
+            suffix="mm"
+            style={{ minWidth: "80px" }}
+          />
+        </Form.Item>
+      </Flex>
+      <Flex justify="space-between">
+        <Form.Item
+          name={["globalInfo", "dispLimitCoeff"]}
+          label="塑性挠度限值"
+          className={styles.GISingleInput}
+        >
+          <Input
+            placeholder="请输入塑性挠度限值"
+            prefix="L /"
+            style={{ minWidth: "80px" }}
+          />
+        </Form.Item>
+        <Form.Item
+          name={["globalInfo", "crackWidthLimit"]}
+          label="裂缝限值"
+          className={styles.GISingleInput}
+        >
+          <Input
+            placeholder="请输入裂缝限值"
+            suffix="mm"
+            style={{ minWidth: "80px" }}
+          />
+        </Form.Item>
+        <Form.Item
+          name={["globalInfo", "concreteLevel"]}
+          label="混凝土等级"
+          className={styles.GISingleInput}
+          // style={{ marginRight: "30px" }}
+        >
+          <Select
+            style={{ minWidth: "80px" }}
+            options={[
+              { value: 30, label: "C30" },
+              { value: 35, label: "C35" },
+              { value: 40, label: "C40" },
+            ]}
+          />
+        </Form.Item>
+      </Flex>
     </div>
   );
   const stairInfoForm = (
-    <Form
-      name="dynamic_form_nest_item"
-      onFinish={onFinish}
-      autoComplete="off"
-      style={{ height: "100%" }}
-      initialValues={{ stairs: [defaultSingleStairDat] }}
-    >
-      <Form.List name="stairs">
-        {(fields, { add, remove }) => (
-          <>
-            <div className={styles.rollingData}>
-              {fields.map((field, name, ...restField) => (
-                <Row key={field.key} className={styles.stairDataInput}>
-                  <Col span={22}>{inputItems(name, restField)}</Col>
-                  <Col span={2}>
-                    <Flex
-                      align="center"
-                      justify="center"
-                      style={{ height: "100%" }}
-                    >
-                      <MinusCircleOutlined onClick={() => remove(name)} />
-                    </Flex>
-                  </Col>
-                </Row>
-              ))}
-              <Form.Item>
-                <Button
-                  type="dashed"
-                  onClick={() => add(defaultSingleStairDat)}
-                  block
-                  icon={<PlusOutlined />}
-                >
-                  Add field
-                </Button>
-              </Form.Item>
-            </div>
-
+    <Form.List name="stairs">
+      {(fields, { add, remove }) => (
+        <>
+          <div className={styles.rollingData}>
+            {fields.map((field, name, ...restField) => (
+              <Row key={field.key} className={styles.stairDataInput}>
+                <Col span={22}>{inputItems(name, restField)}</Col>
+                <Col span={2}>
+                  <Flex
+                    align="center"
+                    justify="center"
+                    style={{ height: "100%" }}
+                  >
+                    <MinusCircleOutlined onClick={() => remove(name)} />
+                  </Flex>
+                </Col>
+              </Row>
+            ))}
             <Form.Item>
-              <Button type="primary" htmlType="submit">
-                Submit
+              <Button
+                type="dashed"
+                onClick={() => add(defaultSingleStairDat)}
+                block
+                icon={<PlusOutlined />}
+              >
+                添加一个梯段
               </Button>
             </Form.Item>
-          </>
-        )}
-      </Form.List>
-    </Form>
+          </div>
+
+          <Form.Item>
+            <Button type="primary" htmlType="submit">
+              提交数据并生成计算书
+            </Button>
+          </Form.Item>
+        </>
+      )}
+    </Form.List>
   );
 
   return (
     <Row style={{ height: "100%" }}>
       <Col span={12} style={{ height: "100%" }}>
-        {dataTitle}
-        {stairInfoForm}
+        <Form
+          name="dynamic_form_nest_item"
+          onFinish={onFinish}
+          autoComplete="off"
+          style={{ height: "100%" }}
+          initialValues={{
+            stairs: [defaultSingleStairDat],
+            globalInfo: defaultGlobalInfo,
+          }}
+        >
+          {dataTitle(
+            <Flex justify="center" align="center">
+              全局参数
+            </Flex>
+          )}
+          {globalInfoForm}
+          {dataTitle(dataTitle2)}
+          {stairInfoForm}
+        </Form>
       </Col>
       <Col span={12}>
         <Flex
@@ -212,10 +369,21 @@ const StairSheet: React.FC = () => {
             <Button
               style={{ margin: "5px" }}
               onClick={async () => {
-                const testFile = await stairCalculateSheetGen({
-                  reGenerate: false,
-                });
-                setFile(testFile);
+                const wsUrl = `ws://${base_url}/ws/stair_report_generate`;
+                socket = new ReconnectingWebSocket(wsUrl);
+                socket.onmessage = async (e) => {
+                  console.log("我收到了websocket的消息", e);
+                  const data = JSON.parse(e.data);
+                  if (data.canClose == true) {
+                    socket.close();
+                    const testFile = await downLoadFile({
+                      filePath: data.filePath,
+                    });
+                    setFile(testFile);
+                  }
+                };
+                const message = { message: "你好呀！!!!！！" };
+                socket.send(JSON.stringify(message));
               }}
             >
               点我生成示例报告
@@ -226,7 +394,7 @@ const StairSheet: React.FC = () => {
                 if (file == undefined) {
                   return;
                 }
-                downLoadDocx("louti", file);
+                downLoadDocx("Stair", file);
               }}
             >
               下载报告
@@ -245,31 +413,3 @@ const StairSheet: React.FC = () => {
   );
 };
 export default StairSheet;
-
-// <Button
-//   onClick={() => {
-//     const wsUrl = `ws://${base_url}/ws/report_generate`;
-//     socket = new ReconnectingWebSocket(wsUrl);
-//     socket.onmessage = (e) => {
-//       console.log("我收到了websocket的消息", e);
-//       const data = JSON.parse(e.data);
-//       setTextString(data.status);
-//       if (data.canClose == true) {
-//         socket.close();
-//       }
-//     };
-//     const message = { message: "你好呀！！！" };
-//     socket.send(JSON.stringify(message));
-//   }}
-// >
-//   链接WebSocket
-// </Button>
-// <Button
-//   onClick={() => {
-//     socket.close();
-//     setTextString("Nothing");
-//   }}
-// >
-//   断开WebSocket
-// </Button>
-// <div>{textString}</div>

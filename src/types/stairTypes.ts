@@ -10,3 +10,11 @@ export type SingleStairData = {
     rightBeamOffset: number
 }
 
+export type StairGlobalInfo = {
+    appendDeadLoad: number,
+    liveLoad: number,
+    concreteLevel: number,
+    coverThickness: number,
+    dispLimitCoeff: number,
+    crackWidthLimit: number
+}
