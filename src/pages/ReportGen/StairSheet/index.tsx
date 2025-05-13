@@ -19,7 +19,8 @@ import styles from "./index.module.less";
 import type { SingleStairData, StairGlobalInfo } from "@/types";
 import { dataTitle2 } from "./possibleComponents";
 
-const base_url = "localhost:8000";
+// 根据对应 env 文件加载
+const base_url = import.meta.env.VITE_BASE_WS_URL;
 
 // 获取主颜色
 const mainColor = import.meta.env.VITE_MAIN_COLORS.split(",");
@@ -50,12 +51,13 @@ const defaultGlobalInfo: StairGlobalInfo = {
   crackWidthLimit: 0.3,
 };
 
-const creatInpIt = (
+const createInpIt = (
   name: number,
   restField: [array: FormListFieldData[]],
   keyString: keyof SingleStairData,
   symbol: string,
-  describ: string,
+  subSymbol: string,
+  describe: string,
   minValue: number = 50,
   maxValue: number = 5000
 ) => {
@@ -70,14 +72,21 @@ const creatInpIt = (
           required: true,
           min: minValue,
           max: maxValue,
-          message: `${describ}需是${minValue}~${maxValue}之间的数字`,
+          message: `${describe}需是${minValue}~${maxValue}之间的数字`,
         },
       ]}
       className={styles.singleInput}
-      label={symbol}
-      tooltip={describ}
+      label={
+        <>
+          {symbol}
+          <sub>
+            <sub>{subSymbol}</sub>
+          </sub>
+        </>
+      }
+      tooltip={describe}
     >
-      <InputNumber placeholder={describ} />
+      <InputNumber placeholder={describe} suffix="mm" />
     </Form.Item>
   );
 };
@@ -85,6 +94,7 @@ const creatInpIt = (
 const StairSheet: React.FC = () => {
   const viewerRef = useRef(null);
   const [file, setFile] = useState<Blob>();
+  const [generating, setGenerating] = useState<boolean>(false);
 
   let socket: ReconnectingWebSocket;
 
@@ -98,8 +108,9 @@ const StairSheet: React.FC = () => {
 
   const onFinish = (values: any) => {
     setFile(undefined);
+    setGenerating(true);
     console.log("Received values of form:", values);
-    const wsUrl = `ws://${base_url}/ws/stair_report_generate`;
+    const wsUrl = `${base_url}/ws/stair_report_generate`;
     socket = new ReconnectingWebSocket(wsUrl);
     socket.onmessage = async (e) => {
       console.log("我收到了websocket的消息", e);
@@ -110,6 +121,7 @@ const StairSheet: React.FC = () => {
           filePath: data.filePath,
         });
         setFile(testFile);
+        setGenerating(false);
       }
     };
     socket.send(JSON.stringify(values));
@@ -125,53 +137,56 @@ const StairSheet: React.FC = () => {
         <Flex>
           <Flex vertical>
             {showTitle ? <div>左板X长</div> : <></>}
-            {creatInpIt(name, restField, "leftSlabLen", "Ll", "左板X长")}
+            {createInpIt(name, restField, "leftSlabLen", "L", "左", "左板X长")}
           </Flex>
           <Flex vertical>
             {showTitle ? <div>梯段X长</div> : <></>}
-            {creatInpIt(name, restField, "mainSlabLen", "Lm", "梯段X长")}
+            {createInpIt(name, restField, "mainSlabLen", "L", "中", "梯段X长")}
           </Flex>
           <Flex vertical>
             {showTitle ? <div>右板X长</div> : <></>}
-            {creatInpIt(name, restField, "rightSlabLen", "Lr", "右板X长")}
+            {createInpIt(name, restField, "rightSlabLen", "L", "右", "右板X长")}
           </Flex>
           <Flex vertical>
             {showTitle ? <div>左右高差</div> : <></>}
-            {creatInpIt(name, restField, "stairHeight", "H", "左右高差")}
+            {createInpIt(name, restField, "stairHeight", "H", "", "左右高差")}
           </Flex>
         </Flex>
         <Flex>
           <Flex vertical>
-            {showTitle ? <div>左板板厚</div> : <></>}{" "}
-            {creatInpIt(
+            {showTitle ? <div>左板板厚</div> : <></>}
+            {createInpIt(
               name,
               restField,
               "leftSlabThick",
-              "Tl",
+              "T",
+              "左",
               "左板板厚",
               100,
               400
             )}
           </Flex>
           <Flex vertical>
-            {showTitle ? <div>梯段板厚</div> : <></>}{" "}
-            {creatInpIt(
+            {showTitle ? <div>梯段板厚</div> : <></>}
+            {createInpIt(
               name,
               restField,
               "mainSlabThick",
-              "Tm",
+              "T",
+              "中",
               "梯段板厚",
               100,
               400
             )}
           </Flex>
           <Flex vertical>
-            {showTitle ? <div>右板板厚</div> : <></>}{" "}
-            {creatInpIt(
+            {showTitle ? <div>右板板厚</div> : <></>}
+            {createInpIt(
               name,
               restField,
               "rightSlabThick",
-              "Tr",
+              "T",
+              "右",
               "右板板厚",
               100,
               400
@@ -180,24 +195,26 @@ const StairSheet: React.FC = () => {
         </Flex>
         <Flex>
           <Flex vertical>
-            {showTitle ? <div>左梁偏置</div> : <></>}{" "}
-            {creatInpIt(
+            {showTitle ? <div>左梁偏置</div> : <></>}
+            {createInpIt(
               name,
               restField,
               "leftBeamOffset",
-              "Ol",
+              "O",
+              "左",
               "左梁偏置",
               0,
               2000
             )}
           </Flex>
           <Flex vertical>
-            {showTitle ? <div>右梁偏置</div> : <></>}{" "}
-            {creatInpIt(
+            {showTitle ? <div>右梁偏置</div> : <></>}
+            {createInpIt(
               name,
               restField,
               "rightBeamOffset",
-              "Or",
+              "O",
+              "右",
               "右梁偏置",
               0,
               2000
@@ -329,6 +346,18 @@ const StairSheet: React.FC = () => {
             <Button type="primary" htmlType="submit">
               提交数据并生成计算书
             </Button>
+            <Button
+              type="primary"
+              style={{ marginLeft: "50px" }}
+              onClick={() => {
+                if (file == undefined) {
+                  return;
+                }
+                downLoadDocx("Stair", file);
+              }}
+            >
+              下载报告
+            </Button>
           </Form.Item>
         </>
       )}
@@ -365,43 +394,12 @@ const StairSheet: React.FC = () => {
           align="center"
           style={{ padding: "0px 50px 50px 50px " }}
         >
-          <Flex justify="space-around">
-            <Button
-              style={{ margin: "5px" }}
-              onClick={async () => {
-                const wsUrl = `ws://${base_url}/ws/stair_report_generate`;
-                socket = new ReconnectingWebSocket(wsUrl);
-                socket.onmessage = async (e) => {
-                  console.log("我收到了websocket的消息", e);
-                  const data = JSON.parse(e.data);
-                  if (data.canClose == true) {
-                    socket.close();
-                    const testFile = await downLoadFile({
-                      filePath: data.filePath,
-                    });
-                    setFile(testFile);
-                  }
-                };
-                const message = { message: "你好呀！!!!！！" };
-                socket.send(JSON.stringify(message));
-              }}
-            >
-              点我生成示例报告
-            </Button>
-            <Button
-              style={{ margin: "5px" }}
-              onClick={() => {
-                if (file == undefined) {
-                  return;
-                }
-                downLoadDocx("Stair", file);
-              }}
-            >
-              下载报告
-            </Button>
-          </Flex>
           {file ? (
             <div className="docx-viewer" ref={viewerRef} style={docViewStyle} />
+          ) : generating ? (
+            <Flex justify="center" align="center" style={docViewStyle}>
+              生成中，请稍后.....
+            </Flex>
           ) : (
             <Flex justify="center" align="center" style={docViewStyle}>
               等待预览
